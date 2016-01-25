@@ -4,8 +4,12 @@
 #include <gio/gio.h>
 #include <dbus/dbus.h>
 #include <assert.h>
+#include "yarn.h"
+
+// large thank you to dunst for de-mystifying gdbus!
 
 // struct to hold notification information
+/*
 struct
 notification {
     char *app_name;
@@ -15,6 +19,7 @@ notification {
     char *body;
     int  expire_timeout;
 };
+*/
 
 // make a notification struct (allocate memory, etc)
 struct
@@ -232,6 +237,9 @@ onNotify(GDBusConnection *connection,
     GVariant *reply = g_variant_new("(u)", id);
     g_dbus_method_invocation_return_value(invocation, reply);
     g_dbus_connection_flush(connection, NULL, NULL, NULL);
+
+    g_print("about to print summary from yarn.c\n");
+    //run(n);
 }
 
 static void
