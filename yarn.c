@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "yarn.h"
+#include "scroll.h"
 
 //static struct notification *n;
 
