@@ -8,19 +8,6 @@
 
 // large thank you to dunst for de-mystifying gdbus!
 
-// struct to hold notification information
-/*
-struct
-notification {
-    char *app_name;
-    int  replaces_id;
-    char *app_icon;
-    char *summary;
-    char *body;
-    int  expire_timeout;
-};
-*/
-
 // make a notification struct (allocate memory, etc)
 struct
 notification *notification_create(char *app_name,
@@ -230,16 +217,15 @@ onNotify(GDBusConnection *connection,
     n->summary = summary;
     n->body = body;
     n->expire_timeout = expire_timeout;
-    g_print("summary %s, body %s\n", n->summary, n->body);
-    g_print("timeout: %i\n", n->expire_timeout);
 
     int id = 1;
     GVariant *reply = g_variant_new("(u)", id);
     g_dbus_method_invocation_return_value(invocation, reply);
     g_dbus_connection_flush(connection, NULL, NULL, NULL);
 
-    g_print("about to print summary from yarn.c\n");
-    //run(n);
+    g_print("About to print the summary from yarn.c\n");
+    run(n);
+    free(n);
 }
 
 static void

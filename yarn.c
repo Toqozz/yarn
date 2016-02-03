@@ -4,10 +4,14 @@
 #include "yarn.h"
 #include "scroll.h"
 
-//static struct notification *n;
-
 void run(struct notification *n)
 {
+    char *message;
+    char space = ' ';
+
     printf("sizeof: %lui\n", sizeof(n->summary));
-    printf("summary from yarn.c%s\n", n->summary);
+    
+    message = append(n->body, &space, 30);
+    scroll(message, n->summary, 10, 40, 0);
+    free(message);
 }

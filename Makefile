@@ -11,6 +11,6 @@ CFLAGS=-Wall -g -I/usr/include/dbus-1.0 -I/usr/include/glib-2.0 -I/usr/lib/glib-
 all:	dbus
 
 dbus:
-	$(CC) $(BEFORE)	yarn.c dbus.c	$(AFTER) -o dbus
+	$(CC) $(BEFORE)	yarn.c scroll.c dbus.c	$(AFTER) -o dbus
 clean:
 	rm -f dbus
