@@ -9,16 +9,17 @@
 #define BUFSIZE 2048
 
 // Append a character to a string a set amount of times.
-char *append(char *dest, char *add, int times)
+char *append(char *dest, int times)
 {
     int i = 0;
+    char add = ' ';
     // calloc(extra space + original length + extra space + 0/)
     char *concat = calloc((times + strlen(dest) + times + 1), 1);
     assert(concat != NULL);
 
     {
         for(i = 0; i < times; i++)
-            strncat(concat, add, 1);
+            strncat(concat, &add, 1);
         strncat(concat, dest, strlen(concat) + strlen(dest));
     }
     return concat;
