@@ -4,7 +4,9 @@
 #include <gio/gio.h>
 #include <dbus/dbus.h>
 #include <assert.h>
+#include <pthread.h>
 #include "yarn.h"
+#include "datatypes.h"
 
 // large thank you to dunst for de-mystifying gdbus!
 
@@ -100,6 +102,7 @@ onGetServerInformation(GDBusConnection *connection,
                        const gchar *sender,
                        const GVariant *parameters,
                        GDBusMethodInvocation *invocation);
+
 
 
 
@@ -224,8 +227,14 @@ onNotify(GDBusConnection *connection,
     g_dbus_connection_flush(connection, NULL, NULL, NULL);
 
     g_print("About to print the summary from yarn.c\n");
-    run(n);
-    free(n);
+
+    //TODO check about running thread first, and just do stuff with the database if it already exists.
+    pthread_t running_thread;
+    pthread_mutex_t stack_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+    pthread_create(&running_thread, NULL, run, n);
+    //run(n);
+    //free(n);
 }
 
 static void

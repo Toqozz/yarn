@@ -1,17 +1,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <pthread.h>
 #include "yarn.h"
-#include "scroll.h"
+#include "datatypes.h"
 
-void run(struct notification *n)
+//TODO check if thread is running or not first please!!!
+
+//void run(struct notification *n)
+void
+*run(void *arg)
 {
-    char *message;
-    char space = ' ';
+    struct notification *n = (struct notification*) arg;
 
-    printf("sizeof: %lui\n", sizeof(n->summary));
-    
-    message = append(n->body, &space, 30);
-    scroll(message, n->summary, 10, 40, 0);
-    free(message);
+    printf("sizeof: %lu\n", sizeof(n));
+
+    printf("%s\n", n->summary);
+
+    //free(message);
+    //pthread_mutex_destroy(&stack_mutex);
+    return NULL;
 }
