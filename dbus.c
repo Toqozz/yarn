@@ -12,14 +12,14 @@
 
 // make a notification struct (allocate memory, etc)
 struct
-notification *notification_create(char *app_name,
+Notification *notification_create(char *app_name,
                                   int  replaces_id,
                                   char *app_icon,
                                   char *summary,
                                   char *body,
                                   int  expire_timeout)
 {
-    struct notification *n = malloc(sizeof(struct notification));
+    struct Notification *n = malloc(sizeof(struct Notification));
     assert (n != NULL);
 
     n->app_name = app_name;
@@ -208,7 +208,7 @@ onNotify(GDBusConnection *connection,
     g_variant_iter_free(iter);
     }
 
-    struct notification *n = notification_create (app_name,
+    struct Notification *n = notification_create (app_name,
                                                   replaces_id,
                                                   app_icon,
                                                   summary,

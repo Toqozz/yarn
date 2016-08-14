@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include "datatypes.h"
+#include "parse.h"
 
 
 void

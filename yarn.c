@@ -14,7 +14,8 @@ double timeout = 10;
 int  margin = 5, upper = 0,
      xpos = 0, ypos = 0,
      width = 0, height = 0,
-     gap = 7, rounding = 2;
+     gap = 7, rounding = 2,
+     max = 4;
 char *font = "Incosolata 14";
 char *dimensions = "300x30+300+300";
 
@@ -24,9 +25,9 @@ char *dimensions = "300x30+300+300";
 void
 *run(void *arg)
 {
-    struct notification *n = (struct notification*) arg;
-
+    struct Notification *n = (struct Notification*) arg;
     parse(dimensions, &xpos, &ypos, &width, &height);
+    struct Variables *opt = var_create(font, margin, max, upper, gap, rounding, timeout, xpos, ypos, width, height);
 
     printf("sizeof: %lu\n", sizeof(n));
 
@@ -34,7 +35,7 @@ void
 
     printf("running now!\n");
 
-    draw(n->summary);
+    draw(opt, n->summary);
 
     //pthread_mutex_destroy(&stack_mutex);
     return NULL;

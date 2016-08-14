@@ -18,62 +18,27 @@
 #include "x.h"
 #include "cairo.h"
 #include "datatypes.h"
+#include "draw.h"
+#include "queue.h"
 
-// TODO replace with config options?
 // Interval = 33 = 30fps.
-#define QUEUESIZE 100
 #define INTERVAL 33
 
-// nanosleep and queue for messages.
+// Nanosleep helper.
 struct timespec req = {0, INTERVAL*1000000};
-struct MessageInfo MessageQueue[QUEUESIZE];
 
-// Queue.
-// TODO transfer into a struct.
-int   rear = 0;
-int   front = -1;
-int   i;
-void queue_insert(struct MessageInfo message)
-{
-    if (rear == QUEUESIZE-1)
-        printf("Queue is full, skipped.\n");
-    else
-    {
-        // If queue is initially empty.
-        if (front == -1)
-            front = 0;
-
-        // Add item to array.
-        // There is a new item, the end is pushed back.
-        MessageQueue[rear++] = message;
-    }
-}
-void queue_delete(int position)
-{
-    // Nothing in queue.
-    if (front == - 1)
-        printf("Queue is empty -- nothing to delete.\n");
-
-    // Move each item down one.
-    else
-    {
-        for (i = position; i < rear-1; i++)
-            MessageQueue[i] = MessageQueue[i+1];
-        rear--;
-    }
-}
-bool queue_empty()
-{
-    if (front == rear)
-        return true;
-    else
-        return false;
-}
+/*
+ * The queuespec and MessageArray are global so that they can be
+ * accessed easily by different threads.
+ * The queue is an essential part of yarn.
+ */
+Queue queuespec = { 0, -1 };
+Message MessageArray[QUEUESIZE];
 
 // Create a struct on the heap.
 struct Variables
 *var_create(char *font,
-            int margin, int number, int upper,
+            int margin, int max, int upper,
             int gap, int rounding, int timeout, int xpos, int ypos,
             int width, int height)
 {
@@ -82,7 +47,7 @@ struct Variables
 
     info->font = font;
     info->margin = margin;
-    info->number = number;
+    info->max = max;
     info->upper = upper;
     info->gap = gap;
     info->rounding = rounding;
@@ -96,10 +61,10 @@ struct Variables
 }
 
 // Create messages on the stack.
-struct MessageInfo
+Message
 message_create(char *string, int textx, int texty, int x, int y, double fuse)
 {
-    struct MessageInfo message;
+    Message message;
 
     message.string = string;
     message.textx = textx;
@@ -120,8 +85,10 @@ var_destroy(struct Variables *destroy)
 }
 
 void
-draw(struct Variables *info, char *string)
+draw(struct Variables *opt, char *string)
 {
+    int i = 0;
+
     cairo_surface_t *surface;
     cairo_t *context;
     PangoRectangle extents;
@@ -129,23 +96,23 @@ draw(struct Variables *info, char *string)
     PangoFontDescription *desc;
 
     // Surface for drawing on, layout for putting the font on.
-    surface = cairo_create_x11_surface(info->xpos, info->ypos, info->width, (info->height + info->gap) * info->number);
+    surface = cairo_create_x11_surface(opt->xpos, opt->ypos, opt->width, (opt->height + opt->gap) * opt->max);
     context = cairo_create(surface);
     layout = pango_cairo_create_layout (context);
 
     // Font selection with pango.
-    desc = pango_font_description_from_string(info->font);
+    desc = pango_font_description_from_string(opt->font);
     pango_layout_set_font_description(layout, desc);
     pango_font_description_free(desc); // be free my child.
 
     // string, text x, text y, x, y, fuse.
-    queue_insert(message_create(string, 0, 0, -info->width-1, i*(info->height + info->gap), info->timeout));
-    printf("String: %s, Fuse: %Lf\n", MessageQueue[i].string, MessageQueue[i].fuse);
+    queuespec = queue_insert(queuespec, message_create(string, 0, 0, -opt->width-1, i*(opt->height + opt->gap), opt->timeout));
+    //printf("String: %s, Fuse: %Lf\n", MessageArray[i].string, MessageArray[i].fuse);
 
-    //struct MessageInfo messages[info->number];
+    //struct MessageInfo messages[opt->max];
     /*
     int i;
-    for (i = 0; i < info->number; i++){
+    for (i = 0; i < opt->number; i++){
     }
     */
 
@@ -161,32 +128,32 @@ draw(struct Variables *info, char *string)
         // New group (everything is pre-rendered and then shown at the same time).
         cairo_push_group(context);
 
-        for (i = 0; i < rear; i++)
+        for (i = 0; i < queuespec.rear; i++)
         {
             // If the bar has reached the end, stop it.  Otherwise keep going.
-            ++MessageQueue[i].x < 0 ? ((MessageQueue[i].x = MessageQueue[i].x/1.05)) : ((MessageQueue[i].x = 0));
-            MessageQueue[i].textx++;
+            ++MessageArray[i].x < 0 ? ((MessageArray[i].x = MessageArray[i].x/1.05)) : ((MessageArray[i].x = 0));
+            MessageArray[i].textx++;
 
             // Draw each "panel".
-            rounded_rectangle(MessageQueue[i].x, MessageQueue[i].y, info->width, info->height, 1, info->rounding, context, 1,0.5,0,1);
+            rounded_rectangle(MessageArray[i].x, MessageArray[i].y, opt->width, opt->height, 1, opt->rounding, context, 1,0.5,0,1);
 
             // Allow markup on the string.
             // Pixel extents are much better for this purpose.
-            pango_layout_set_markup(layout, MessageQueue[i].string, -1);
+            pango_layout_set_markup(layout, MessageArray[i].string, -1);
             pango_layout_get_pixel_extents(layout, &extents, NULL);
 
             // Push the text to the soure.
             cairo_set_source_rgba(context, 0,0,0,1);
-            cairo_move_to(context, MessageQueue[i].textx - extents.width, MessageQueue[i].y + info->upper);
+            cairo_move_to(context, MessageArray[i].textx - extents.width, MessageArray[i].y + opt->upper);
             pango_cairo_show_layout(context, layout);
 
             // Draw over the text with a margin.
             cairo_set_source_rgba(context, 1,0.5,0,1);
-            cairo_rectangle(context, 0, MessageQueue[i].y, info->margin, info->height);
+            cairo_rectangle(context, 0, MessageArray[i].y, opt->margin, opt->height);
             cairo_fill(context);
 
             // Kind of cool.
-            //cairo_translate(context, info->width/2.0, info->height/2.0);
+            //cairo_translate(context, opt->width/2.0, opt->height/2.0);
             //cairo_rotate(context, 1);
             //
             //cairo_scale(context, -1, 1);
@@ -212,15 +179,15 @@ draw(struct Variables *info, char *string)
                 break;
         }
 
-        for (i = 0; i < rear; i++)
+        for (i = 0; i < queuespec.rear; i++)
         {
-            printf("Fuse: %Lf, Taking away: %f\n", MessageQueue[i].fuse, (double) INTERVAL/1000);
-            MessageQueue[i].fuse = MessageQueue[i].fuse - (double) INTERVAL/1000;
-            if (MessageQueue[i].fuse <= 0)
-                queue_delete(i);
+            printf("Fuse: %Lf, Taking away: %f\n", MessageArray[i].fuse, (double) INTERVAL/1000);
+            MessageArray[i].fuse = MessageArray[i].fuse - (double) INTERVAL/1000;
+            if (MessageArray[i].fuse <= 0)
+                queue_delete(queuespec, i);
         }
 
-        if (queue_empty())
+        if (queue_empty(queuespec))
             running = 0;
 
         // Finally sleep ("animation").
@@ -232,7 +199,7 @@ draw(struct Variables *info, char *string)
     pango_cairo_font_map_set_default(NULL);
     cairo_destroy(context);
 
-    var_destroy(info);
+    var_destroy(opt);
 
     destroy(surface);
 }
