@@ -229,10 +229,10 @@ onNotify(GDBusConnection *connection,
     g_print("About to print the summary from yarn.c\n");
 
     //TODO check about running thread first, and just do stuff with the database if it already exists.
-    pthread_t running_thread;
+    pthread_t split_notification;
     pthread_mutex_t stack_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-    pthread_create(&running_thread, NULL, run, n);
+    pthread_create(&split_notification, NULL, run, n);
     //run(n);
     //free(n);
 }

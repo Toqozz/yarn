@@ -28,7 +28,8 @@
 struct timespec req = {0, INTERVAL*1000000};
 struct MessageInfo MessageQueue[QUEUESIZE];
 
-// Fifo queue.
+// Queue.
+// TODO transfer into a struct.
 int   rear = 0;
 int   front = -1;
 int   i;
@@ -67,57 +68,6 @@ bool queue_empty()
         return true;
     else
         return false;
-}
-
-// Please save me, this time I cannot run.
-void
-help()
-{
-    printf("basic window making and text printing.\n"
-           "usage: cairo [ -h | -f | -m | -u | -d | -n | -g ]\n"
-           "        -h Show this help\n"
-           "        -f Font to use\n"
-           "        -m Distance from the left side of the window\n"
-           "        -u Distance text is placed from the top of the window\n"
-           "        -d Dimensions (WxH+X+Y)\n"
-           "        -n Number of messages\n"
-           "        -g Gap between messages\n"
-           "        -t Timeout for the message(s)\n"
-           );
-    exit(0);
-}
-
-void
-parse(char *wxh, int *xpos, int *ypos, int *width, int *height)
-{
-    char *x;
-    char *y;
-    char *w;
-    char *h;
-
-    // We need something that is mutable.
-    // Remember pointer position (it's being mutated).
-    char *dupe = strdup(wxh);
-    char *point = dupe;
-
-    // If memeory not got.
-    assert(dupe != 0);
-
-    // ex. "500x10+20+30"
-    w = strsep(&dupe, "x");         // w = "500", dupe = "10+20+30"
-    h = strsep(&dupe, "+");         // h = "10", dupe = "20+30"
-    x = strsep(&dupe, "+");         // x = "20", dupe = "30"
-    y = strsep(&dupe, "+");         // y = "30", dupe = ""
-
-    // Change variables 'globally' in memory. (*width and *height have memory addresses from main.).
-    *xpos = strtol(x, NULL, 10);   // change value xpos is pointing to to something else.
-    *ypos = strtol(y, NULL, 10);
-    *width = strtol(w, NULL, 10);
-    *height = strtol(h, NULL, 10);
-
-    // Free pointers after everything is done with it.
-    free(point);        // Points to dupe's old memory footprint?
-    free(dupe);
 }
 
 // Create a struct on the heap.
@@ -170,16 +120,13 @@ var_destroy(struct Variables *destroy)
 }
 
 void
-runner(struct Variables *info, char *strings[])
+draw(struct Variables *info, char *string)
 {
     cairo_surface_t *surface;
     cairo_t *context;
     PangoRectangle extents;
     PangoLayout *layout;
     PangoFontDescription *desc;
-
-    // TODO: REPLACE with detection:
-    // if new message, message create on the end of the array.
 
     // Surface for drawing on, layout for putting the font on.
     surface = cairo_create_x11_surface(info->xpos, info->ypos, info->width, (info->height + info->gap) * info->number);
@@ -191,14 +138,16 @@ runner(struct Variables *info, char *strings[])
     pango_layout_set_font_description(layout, desc);
     pango_font_description_free(desc); // be free my child.
 
+    // string, text x, text y, x, y, fuse.
+    queue_insert(message_create(string, 0, 0, -info->width-1, i*(info->height + info->gap), info->timeout));
+    printf("String: %s, Fuse: %Lf\n", MessageQueue[i].string, MessageQueue[i].fuse);
+
     //struct MessageInfo messages[info->number];
+    /*
     int i;
     for (i = 0; i < info->number; i++){
-        // string, text x, text y, x, y, fuse.
-        queue_insert(message_create(strings[i], 0, 0, -info->width-1, i*(info->height + info->gap), info->timeout));
-        printf("String: %s, Fuse: %Lf\n", MessageQueue[i].string, MessageQueue[i].fuse);
     }
-
+    */
 
     int running;
     int timepassed;
@@ -288,6 +237,7 @@ runner(struct Variables *info, char *strings[])
     destroy(surface);
 }
 
+/*
 int
 main (int argc, char *argv[])
 {
@@ -346,7 +296,7 @@ main (int argc, char *argv[])
     struct Variables *info = var_create(font, margin, number, upper, gap, rounding, timeout, xpos, ypos, width, height);
 
     // Run until done.
-    runner(info, strings);
+    draw(info, strings);
 
     // Done with strings -- program ending.
     for (i = 0; i < number; i++)
@@ -354,3 +304,4 @@ main (int argc, char *argv[])
 
     return(0);
 }
+*/

@@ -21,11 +21,13 @@ struct MessageInfo {
     long double fuse;
 };
 
+// TODO, transfer variables and notification into one?  i kind of like them separate.
+
 struct notification {
     char *app_name;
-    int  replaces_id;
-    char *app_icon;
     char *summary;
     char *body;
-    int  expire_timeout;
+    char *app_icon;
+    int   replaces_id;
+    int   expire_timeout;
 };
