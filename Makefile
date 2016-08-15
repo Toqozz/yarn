@@ -19,6 +19,6 @@ CFLAGS=-Wall -g -lglib-2.0 -lpthread
 all:	dbus
 
 dbus:
-	$(CC) $(BEFORE)	yarn.c dbus.c draw.c x.c cairo.c parse.c 	$(AFTER) -o dbus
+	$(CC) $(BEFORE)	dbus.c draw.c x.c cairo.c parse.c queue.c yarn.c 	$(AFTER) -o dbus
 clean:
 	rm -f dbus

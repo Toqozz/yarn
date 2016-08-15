@@ -1,13 +1,22 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <assert.h>
 #include <pthread.h>
 #include <cairo-xlib.h>
 
-#include "yarn.h"
 #include "datatypes.h"
 #include "parse.h"
 #include "draw.h"
+#include "queue.h"
+#include "yarn.h"
+
+// pthread types.
+pthread_t split_notification;
+pthread_mutex_t stack_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+extern Queue queuespec;
+static bool THREAD_ALIVE = false;
 
 // Option initialization.
 double timeout = 10;
@@ -19,24 +28,47 @@ int  margin = 5, upper = 0,
 char *font = "Incosolata 14";
 char *dimensions = "300x30+300+300";
 
-//TODO check if thread is running or not first please!!!
-
 //void run(struct notification *n)
 void
 *run(void *arg)
 {
-    struct Notification *n = (struct Notification*) arg;
+    Notification *n = (Notification*) arg;
+
     parse(dimensions, &xpos, &ypos, &width, &height);
-    struct Variables *opt = var_create(font, margin, max, upper, gap, rounding, timeout, xpos, ypos, width, height);
+    Variables *opt = var_create(font, margin, max, upper, gap, rounding, timeout, xpos, ypos, width, height);
+
+    // string, text x, text y, x, y, fuse.
+    Message message = message_create(n->summary, 0, 0, -opt->width-1, (opt->height + opt->gap), opt->timeout);
+    queuespec = queue_insert(queuespec, message);
 
     printf("sizeof: %lu\n", sizeof(n));
-
     printf("%s\n", n->summary);
-
     printf("running now!\n");
 
-    draw(opt, n->summary);
+    draw(opt, message);
 
     //pthread_mutex_destroy(&stack_mutex);
+    free(arg);
+
+    THREAD_ALIVE = false;
+
     return NULL;
+}
+
+void
+prepare(Notification *n)
+{
+    Variables *opt = var_create(font, margin, max, upper, gap, rounding, timeout, xpos, ypos, width, height);
+
+    printf("Entered preparation.\n");
+    if (THREAD_ALIVE == false) {
+        pthread_create(&split_notification, NULL, run, n);
+        THREAD_ALIVE = true;
+    }
+    else {
+        queuespec = queue_insert(queuespec, message_create(n->summary, 0, 0, -opt->width-1, (queuespec.rear+1)*(opt->height + opt->gap), opt->timeout));
+    }
+
+    printf("left preparation.\n");
+    //free(n);
 }

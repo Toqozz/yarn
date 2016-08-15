@@ -16,6 +16,7 @@ typedef struct Queues {
     int rear;
     int front;
 } Queue;
+
 typedef struct Messages {
     char *string;
     int   textx;
@@ -24,8 +25,6 @@ typedef struct Messages {
     int   y;
     long double fuse;
 } Message;
-
-// TODO, transfer variables and notification into one?  i kind of like them separate.
 
 typedef struct Notifications {
     char *app_name;

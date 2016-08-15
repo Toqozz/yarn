@@ -3,7 +3,6 @@
 
 #define QUEUESIZE 100
 
-
 Queue
 queue_insert(Queue queuespec, Message message);
 

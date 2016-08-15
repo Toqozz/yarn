@@ -4,14 +4,13 @@
 #include <gio/gio.h>
 #include <dbus/dbus.h>
 #include <assert.h>
-#include <pthread.h>
-#include "yarn.h"
+
 #include "datatypes.h"
+#include "yarn.h"
 
 // large thank you to dunst for de-mystifying gdbus!
 
 // make a notification struct (allocate memory, etc)
-struct
 Notification *notification_create(char *app_name,
                                   int  replaces_id,
                                   char *app_icon,
@@ -19,7 +18,7 @@ Notification *notification_create(char *app_name,
                                   char *body,
                                   int  expire_timeout)
 {
-    struct Notification *n = malloc(sizeof(struct Notification));
+    Notification *n = malloc(sizeof(Notification));
     assert (n != NULL);
 
     n->app_name = app_name;
@@ -208,12 +207,12 @@ onNotify(GDBusConnection *connection,
     g_variant_iter_free(iter);
     }
 
-    struct Notification *n = notification_create (app_name,
-                                                  replaces_id,
-                                                  app_icon,
-                                                  summary,
-                                                  body,
-                                                  expire_timeout);
+    Notification *n = notification_create (app_name,
+                                           replaces_id,
+                                           app_icon,
+                                           summary,
+                                           body,
+                                           expire_timeout);
     n->app_name = app_name;
     n->replaces_id = replaces_id;
     n->app_icon = app_icon;
@@ -228,13 +227,7 @@ onNotify(GDBusConnection *connection,
 
     g_print("About to print the summary from yarn.c\n");
 
-    //TODO check about running thread first, and just do stuff with the database if it already exists.
-    pthread_t split_notification;
-    pthread_mutex_t stack_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-    pthread_create(&split_notification, NULL, run, n);
-    //run(n);
-    //free(n);
+    prepare(n);
 }
 
 static void

@@ -29,6 +29,8 @@ queue_delete(Queue queuespec, int position)
 {
     int i = 0;
 
+    printf("queue delet called\n");
+
     // Nothing in queue.
     if (queuespec.front == - 1)
         printf("Queue is empty -- nothing to delete.\n");

@@ -15,9 +15,9 @@
 #include <assert.h>
 //#include <pthread.h>
 
+#include "datatypes.h"
 #include "x.h"
 #include "cairo.h"
-#include "datatypes.h"
 #include "draw.h"
 #include "queue.h"
 
@@ -78,17 +78,15 @@ message_create(char *string, int textx, int texty, int x, int y, double fuse)
 
 // Free heap memory.
 void
-var_destroy(struct Variables *destroy)
+var_destroy(Variables *destroy)
 {
     assert(destroy != NULL);
     free(destroy);
 }
 
 void
-draw(struct Variables *opt, char *string)
+draw(Variables *opt, Message message)
 {
-    int i = 0;
-
     cairo_surface_t *surface;
     cairo_t *context;
     PangoRectangle extents;
@@ -105,17 +103,6 @@ draw(struct Variables *opt, char *string)
     pango_layout_set_font_description(layout, desc);
     pango_font_description_free(desc); // be free my child.
 
-    // string, text x, text y, x, y, fuse.
-    queuespec = queue_insert(queuespec, message_create(string, 0, 0, -opt->width-1, i*(opt->height + opt->gap), opt->timeout));
-    //printf("String: %s, Fuse: %Lf\n", MessageArray[i].string, MessageArray[i].fuse);
-
-    //struct MessageInfo messages[opt->max];
-    /*
-    int i;
-    for (i = 0; i < opt->number; i++){
-    }
-    */
-
     int running;
     int timepassed;
     for (running = 1; running == 1; timepassed++)
@@ -128,7 +115,7 @@ draw(struct Variables *opt, char *string)
         // New group (everything is pre-rendered and then shown at the same time).
         cairo_push_group(context);
 
-        for (i = 0; i < queuespec.rear; i++)
+        for (int i = 0; i < queuespec.rear; i++)
         {
             // If the bar has reached the end, stop it.  Otherwise keep going.
             ++MessageArray[i].x < 0 ? ((MessageArray[i].x = MessageArray[i].x/1.05)) : ((MessageArray[i].x = 0));
@@ -151,12 +138,6 @@ draw(struct Variables *opt, char *string)
             cairo_set_source_rgba(context, 1,0.5,0,1);
             cairo_rectangle(context, 0, MessageArray[i].y, opt->margin, opt->height);
             cairo_fill(context);
-
-            // Kind of cool.
-            //cairo_translate(context, opt->width/2.0, opt->height/2.0);
-            //cairo_rotate(context, 1);
-            //
-            //cairo_scale(context, -1, 1);
         }
 
         // Pop the group.
@@ -179,12 +160,12 @@ draw(struct Variables *opt, char *string)
                 break;
         }
 
-        for (i = 0; i < queuespec.rear; i++)
+        for (int i = 0; i < queuespec.rear; i++)
         {
             printf("Fuse: %Lf, Taking away: %f\n", MessageArray[i].fuse, (double) INTERVAL/1000);
             MessageArray[i].fuse = MessageArray[i].fuse - (double) INTERVAL/1000;
             if (MessageArray[i].fuse <= 0)
-                queue_delete(queuespec, i);
+                queuespec = queue_delete(queuespec, i);
         }
 
         if (queue_empty(queuespec))
@@ -204,21 +185,9 @@ draw(struct Variables *opt, char *string)
     destroy(surface);
 }
 
+
+
 /*
-int
-main (int argc, char *argv[])
-{
-    // Option initialization.
-    double timeout = 10;
-    int  margin = 5, number = 1,
-         upper = 0, xpos = 0,
-         ypos = 0, width = 0,
-         height = 0, gap = 0,
-         rounding = 0;
-    char *font;
-    char *dimensions = "300x300";
-
-
     int  opt;
     while ((opt = getopt(argc, argv, "hf:m:n:u:g:r:t:d:")) != -1) {
         switch(opt)
@@ -235,35 +204,6 @@ main (int argc, char *argv[])
             default: help();
         }
     }
-
-    char *strings[number];
-
-    // Initialise to NULL and read stdin.  If the char is NULL, getline will do memory allocation automatically.
-    int i;
-    int status;
-    unsigned long len;
-    for (i = 0; i < number; i++) {
-        strings[i] = NULL;
-        status = getline(&strings[i], &len, stdin);
-
-        assert(status != -1);
-        strings[i][strlen(strings[i])-1] = '\0';
-    }
-
-    // Option checking.
-    if (!font) printf("Font is required\n");
-    //if (!dimensions) dimensions = "300x300";
-    //if (margin < 0) margin = 5;
-    if (rounding < 0) rounding = 0;
-
-    // Parse the dimensions string into relative variables.
-    parse(dimensions, &xpos, &ypos, &width, &height);
-
-    // Create info on the heap.
-    struct Variables *info = var_create(font, margin, number, upper, gap, rounding, timeout, xpos, ypos, width, height);
-
-    // Run until done.
-    draw(info, strings);
 
     // Done with strings -- program ending.
     for (i = 0; i < number; i++)

@@ -1,6 +1,11 @@
 #ifndef YARN_H_INCLUDED
 #define YARN_H_INCLUDED
 
-extern void *run(void *n);
+void
+prepare(Notification *n);
+
+void
+*run(void *arg);
+
 
 #endif
