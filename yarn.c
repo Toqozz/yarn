@@ -23,7 +23,7 @@ double timeout = 10;
 int  margin = 5, upper = 0,
      xpos = 0, ypos = 0,
      width = 0, height = 0,
-     gap = 7, rounding = 2,
+     gap = 7, rounding = 4,
      max = 4;
 char *font = "Incosolata 14";
 char *dimensions = "300x30+300+300";

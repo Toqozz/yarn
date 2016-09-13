@@ -107,13 +107,14 @@ draw(Variables *opt, Message message)
     int timepassed;
     for (running = 1; running == 1; timepassed++)
     {
-        // Clear the surface.
-        cairo_set_operator(context, CAIRO_OPERATOR_CLEAR);
-        cairo_paint(context);
-        cairo_set_operator(context, CAIRO_OPERATOR_OVER);
 
         // New group (everything is pre-rendered and then shown at the same time).
         cairo_push_group(context);
+
+        // Clear the surface.
+        //cairo_set_operator(context, CAIRO_OPERATOR_CLEAR);
+        //cairo_paint(context);
+        //cairo_set_operator(context, CAIRO_OPERATOR_OVER);
 
         for (int i = 0; i < queuespec.rear; i++)
         {
@@ -144,6 +145,7 @@ draw(Variables *opt, Message message)
         cairo_pop_group_to_source(context);
 
         // Paint it.
+        cairo_set_operator(context, CAIRO_OPERATOR_SOURCE);
         cairo_paint(context);
         cairo_surface_flush(surface);
 
