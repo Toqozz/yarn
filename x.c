@@ -92,7 +92,7 @@ cairo_create_x11_surface(int x, int y, int w, int h)
 
 // Respond properly to events.
 int
-check_x_event(cairo_surface_t *sfc, int block)
+check_x_event(cairo_surface_t *sfc, int *position, int block)
 {
     XEvent event;
 
@@ -113,17 +113,17 @@ check_x_event(cairo_surface_t *sfc, int block)
                 return -3053; // 3xp053
             // -event.xbutton.button -- less likely to be taken?
             case ButtonPress:
-                fprintf(stderr, "the button is: %d\n", -event.xbutton.button);
+                //fprintf(stderr, "the button is: %d\n", -event.xbutton.button);
+                *position = event.xbutton.y;
                 return -event.xbutton.button;
-            // Don't get key press events as a utility window, useless.
             case KeyPress:
                 return event.xkey.keycode;
-            // Fuck this event. https://lists.cairographics.org/archives/cairo/2014-August/025534.html
+            // This event is a bit weird: https://lists.cairographics.org/archives/cairo/2014-August/025534.html
             case 65:
                 break;
             // We don't know the event, drop.
             default:
-                fprintf(stderr, "Dropping unhandled XEvent.type = %d.\n", event.type);
+                //fprintf(stderr, "Dropping unhandled XEvent.type = %d.\n", event.type);
                 break;
         }
     }

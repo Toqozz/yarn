@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
@@ -41,5 +42,22 @@ parse(char *wxh, int *xpos, int *ypos, int *width, int *height)
     // Free pointers after everything is done with it.
     free(point);        // Points to dupe's old memory footprint?
     free(dupe);
+}
+
+// Find out which notification was pressed given mouse y coordinate and windw height.
+int
+get_notification (int ypos, int height, int max_notifications)
+{
+    int notification = 0;
+
+    for (int i = 1; i <= max_notifications; i++) {
+        if (ypos < i*height) {
+            //printf("%d is less than %d, it is in %d\n", ypos, i*height, i);
+            notification = i;
+            break;
+        }
+    }
+
+    return notification;
 }
 

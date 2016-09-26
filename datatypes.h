@@ -18,7 +18,8 @@ typedef struct Queues {
 } Queue;
 
 typedef struct Messages {
-    char *string;
+    char *summary;
+    char *body;
     int   textx;
     int   texty;
     int   x;

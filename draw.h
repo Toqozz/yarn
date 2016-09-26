@@ -8,7 +8,7 @@ Variables
             int width, int height);
 
 Message
-message_create(char *string, int textx, int texty, int x, int y, double fuse);
+message_create(char *summary, char *body, int textx, int texty, int x, int y, double fuse);
 
 void
 var_destroy(Variables *destroy);

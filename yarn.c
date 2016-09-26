@@ -38,12 +38,12 @@ void
     Variables *opt = var_create(font, margin, max, upper, gap, rounding, timeout, xpos, ypos, width, height);
 
     // string, text x, text y, x, y, fuse.
-    Message message = message_create(n->summary, 0, 0, -opt->width-1, (opt->height + opt->gap), opt->timeout);
+    Message message = message_create(n->summary, n->body, 0, 0, -opt->width-1, 0, opt->timeout);
     queuespec = queue_insert(queuespec, message);
 
-    printf("sizeof: %lu\n", sizeof(n));
-    printf("%s\n", n->summary);
-    printf("running now!\n");
+    //printf("sizeof: %lu\n", sizeof(n));
+    //printf("%s\n", n->summary);
+    //printf("running now!\n");
 
     draw(opt, message);
 
@@ -60,15 +60,15 @@ prepare(Notification *n)
 {
     Variables *opt = var_create(font, margin, max, upper, gap, rounding, timeout, xpos, ypos, width, height);
 
-    printf("Entered preparation.\n");
+    // If there aren't any notifications being shown, we need to create a new thread.
+    // If there are notifications being shown, simply add the new notification to the queue.
     if (THREAD_ALIVE == false) {
         pthread_create(&split_notification, NULL, run, n);
         THREAD_ALIVE = true;
     }
     else {
-        queuespec = queue_insert(queuespec, message_create(n->summary, 0, 0, -opt->width-1, (queuespec.rear+1)*(opt->height + opt->gap), opt->timeout));
+        queuespec = queue_insert(queuespec, message_create(n->summary, n->body, 0, 0, -opt->width-1, (queuespec.rear)*(opt->height + opt->gap), opt->timeout));
     }
 
-    printf("left preparation.\n");
     //free(n);
 }

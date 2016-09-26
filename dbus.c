@@ -8,7 +8,7 @@
 #include "datatypes.h"
 #include "yarn.h"
 
-// large thank you to dunst for de-mystifying gdbus!
+// mainly from dunst, demistifyed a lot of dbus in c for me.
 
 // make a notification struct (allocate memory, etc)
 Notification *notification_create(char *app_name,

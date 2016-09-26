@@ -13,16 +13,16 @@
 #include <time.h>
 #include <math.h>
 #include <assert.h>
-//#include <pthread.h>
 
-#include "datatypes.h"
 #include "x.h"
+#include "parse.h"
 #include "cairo.h"
-#include "draw.h"
+#include "datatypes.h"
 #include "queue.h"
+#include "draw.h"
 
 // Interval = 33 = 30fps.
-#define INTERVAL 33
+#define INTERVAL 16.5
 
 // Nanosleep helper.
 struct timespec req = {0, INTERVAL*1000000};
@@ -62,11 +62,12 @@ struct Variables
 
 // Create messages on the stack.
 Message
-message_create(char *string, int textx, int texty, int x, int y, double fuse)
+message_create(char *summary, char *body, int textx, int texty, int x, int y, double fuse)
 {
     Message message;
 
-    message.string = string;
+    message.summary = summary;
+    message.body = body;
     message.textx = textx;
     message.texty =texty;
     message.x = x;
@@ -89,7 +90,8 @@ draw(Variables *opt, Message message)
 {
     cairo_surface_t *surface;
     cairo_t *context;
-    PangoRectangle extents;
+    PangoRectangle sextents;
+    PangoRectangle bextents;
     PangoLayout *layout;
     PangoFontDescription *desc;
 
@@ -105,16 +107,12 @@ draw(Variables *opt, Message message)
 
     int running;
     int timepassed;
+    int eventpos;
     for (running = 1; running == 1; timepassed++)
     {
 
         // New group (everything is pre-rendered and then shown at the same time).
         cairo_push_group(context);
-
-        // Clear the surface.
-        //cairo_set_operator(context, CAIRO_OPERATOR_CLEAR);
-        //cairo_paint(context);
-        //cairo_set_operator(context, CAIRO_OPERATOR_OVER);
 
         for (int i = 0; i < queuespec.rear; i++)
         {
@@ -127,18 +125,28 @@ draw(Variables *opt, Message message)
 
             // Allow markup on the string.
             // Pixel extents are much better for this purpose.
-            pango_layout_set_markup(layout, MessageArray[i].string, -1);
-            pango_layout_get_pixel_extents(layout, &extents, NULL);
+            pango_layout_set_markup(layout, MessageArray[i].summary, -1);
+            pango_layout_get_pixel_extents(layout, &sextents, NULL);
+            pango_layout_set_markup(layout, MessageArray[i].body, -1);
+            pango_layout_get_pixel_extents(layout, &bextents, NULL);
 
             // Push the text to the soure.
             cairo_set_source_rgba(context, 0,0,0,1);
-            cairo_move_to(context, MessageArray[i].textx - extents.width, MessageArray[i].y + opt->upper);
+            cairo_move_to(context, (MessageArray[i].textx - bextents.width) + sextents.width, MessageArray[i].y + opt->upper);
             pango_cairo_show_layout(context, layout);
 
             // Draw over the text with a margin.
             cairo_set_source_rgba(context, 1,0.5,0,1);
-            cairo_rectangle(context, 0, MessageArray[i].y, opt->margin, opt->height);
+            cairo_rectangle(context, 0, MessageArray[i].y, opt->margin*2+sextents.width, opt->height);
             cairo_fill(context);
+
+            pango_layout_set_markup(layout, MessageArray[i].summary, -1);
+
+            // Push the text to the soure.
+            cairo_set_source_rgba(context, 0,0,0,1);
+            cairo_move_to(context, MessageArray[i].x+opt->margin, MessageArray[i].y + opt->upper);
+            pango_cairo_show_layout(context, layout);
+
         }
 
         // Pop the group.
@@ -150,21 +158,23 @@ draw(Variables *opt, Message message)
         cairo_surface_flush(surface);
 
         // Clue in for x events (allows to check for hotkeys, stuff like that).
-        switch (check_x_event(surface, 0))
+        // They're all mouse events... position is useful for deciding which notification was clicked.
+        switch (check_x_event(surface, &eventpos, 0))
         {
             case -3053:
                 //fprintf(stderr, "exposed\n");
                 break;
             case 0xff1b:    // esc
             case -1:        // left mouse button
-                fprintf(stderr, "left mouse button\n");
-                running = 0;
+                // Find out which notification was clicked and delete it.
+                printf("the notification clicked was: %d, at %d\n", get_notification(eventpos, opt->height+opt->gap, opt->max), eventpos);
+                queuespec = queue_delete(queuespec, get_notification(eventpos, opt->height+opt->gap, opt->max)-1);
                 break;
         }
 
         for (int i = 0; i < queuespec.rear; i++)
         {
-            printf("Fuse: %Lf, Taking away: %f\n", MessageArray[i].fuse, (double) INTERVAL/1000);
+            //printf("Fuse: %Lf, Taking away: %f\n", MessageArray[i].fuse, (double) INTERVAL/1000);
             MessageArray[i].fuse = MessageArray[i].fuse - (double) INTERVAL/1000;
             if (MessageArray[i].fuse <= 0)
                 queuespec = queue_delete(queuespec, i);
@@ -186,31 +196,3 @@ draw(Variables *opt, Message message)
 
     destroy(surface);
 }
-
-
-
-/*
-    int  opt;
-    while ((opt = getopt(argc, argv, "hf:m:n:u:g:r:t:d:")) != -1) {
-        switch(opt)
-        {
-            case 'h': help(); break;
-            case 'f': font = optarg;  break;
-            case 'm': margin = strtol(optarg, NULL, 10); break;
-            case 'n': number = strtol(optarg, NULL, 10); break;
-            case 'u': upper = strtol(optarg, NULL, 10);  break;
-            case 'g': gap = strtol(optarg, NULL, 10); break;
-            case 'r': rounding = strtol(optarg, NULL, 10); break;
-            case 't': timeout = strtod(optarg, NULL); break;
-            case 'd': dimensions = optarg; break;
-            default: help();
-        }
-    }
-
-    // Done with strings -- program ending.
-    for (i = 0; i < number; i++)
-        free(strings[i]);
-
-    return(0);
-}
-*/
