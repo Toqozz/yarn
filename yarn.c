@@ -20,7 +20,7 @@ static bool THREAD_ALIVE = false;
 
 // Option initialization.
 double timeout = 10;
-int  margin = 5, upper = 0,
+int  margin = 5, upper = 2,
      xpos = 0, ypos = 0,
      width = 0, height = 0,
      gap = 7, rounding = 4,
@@ -67,7 +67,7 @@ prepare(Notification *n)
         THREAD_ALIVE = true;
     }
     else {
-        queuespec = queue_insert(queuespec, message_create(n->summary, n->body, 0, 0, -opt->width-1, (queuespec.rear)*(opt->height + opt->gap), opt->timeout));
+        queuespec = queue_insert(queuespec, message_create(n->summary, n->body, 0, (queuespec.rear)*(opt->height + opt->gap), -opt->width-1, (queuespec.rear)*(opt->height + opt->gap), opt->timeout));
     }
 
     //free(n);

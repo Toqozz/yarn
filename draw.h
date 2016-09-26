@@ -14,6 +14,9 @@ void
 var_destroy(Variables *destroy);
 
 void
+check_fuses(void);
+
+void
 draw(Variables *info, Message message);
 
 void

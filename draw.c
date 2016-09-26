@@ -85,6 +85,19 @@ var_destroy(Variables *destroy)
     free(destroy);
 }
 
+// Check on each message's fuse and delete burnt ones from the queue.
+void
+check_fuses (void)
+{
+    for (int i = 0; i < queuespec.rear; i++)
+    {
+        //printf("Fuse: %Lf, Taking away: %f\n", MessageArray[i].fuse, (double) INTERVAL/1000);
+        MessageArray[i].fuse = MessageArray[i].fuse - (double) INTERVAL/1000;
+        if (MessageArray[i].fuse <= 0)
+            queuespec = queue_delete(queuespec, i);
+    }
+}
+
 void
 draw(Variables *opt, Message message)
 {
@@ -132,21 +145,27 @@ draw(Variables *opt, Message message)
 
             // Push the text to the soure.
             cairo_set_source_rgba(context, 0,0,0,1);
-            cairo_move_to(context, (MessageArray[i].textx - bextents.width) + sextents.width, MessageArray[i].y + opt->upper);
+            //cairo_move_to(context, (MessageArray[i].textx - bextents.width) + sextents.width, MessageArray[i].y + opt->upper);
+            cairo_move_to(context, (opt->width - MessageArray[i].textx), MessageArray[i].texty + opt->upper);
             pango_cairo_show_layout(context, layout);
 
             // Draw over the text with a margin.
+            // This is actually enough room for the summary + the margin.
             cairo_set_source_rgba(context, 1,0.5,0,1);
-            cairo_rectangle(context, 0, MessageArray[i].y, opt->margin*2+sextents.width, opt->height);
+            cairo_rectangle(context, 0, MessageArray[i].y, opt->margin*2 + sextents.width, opt->height);
             cairo_fill(context);
 
+            // Set and push text to the soure.
+            //printf("opt->height: %d, extents.height: %d, opt->height-extents.height = %d / 2 = %f\n", opt->height, sextents.height, (opt->height - sextents.height),MessageArray[i].y + (double)(opt->height - sextents.height)/2);
             pango_layout_set_markup(layout, MessageArray[i].summary, -1);
-
-            // Push the text to the soure.
             cairo_set_source_rgba(context, 0,0,0,1);
-            cairo_move_to(context, MessageArray[i].x+opt->margin, MessageArray[i].y + opt->upper);
+            cairo_move_to(context, MessageArray[i].x + opt->margin, MessageArray[i].texty + opt->upper);
             pango_cairo_show_layout(context, layout);
 
+            // Fill empty space to prevent things like text appearing outside the rectangle.
+            cairo_set_source_rgba(context, 0.5,0.5,0.5,1);
+            cairo_rectangle(context, MessageArray[i].x + opt->width, MessageArray[i].y, opt->width - MessageArray[i].x, opt->height);
+            cairo_fill(context);
         }
 
         // Pop the group.
@@ -172,14 +191,10 @@ draw(Variables *opt, Message message)
                 break;
         }
 
-        for (int i = 0; i < queuespec.rear; i++)
-        {
-            //printf("Fuse: %Lf, Taking away: %f\n", MessageArray[i].fuse, (double) INTERVAL/1000);
-            MessageArray[i].fuse = MessageArray[i].fuse - (double) INTERVAL/1000;
-            if (MessageArray[i].fuse <= 0)
-                queuespec = queue_delete(queuespec, i);
-        }
+        // Check message fuses/remove from queue accordingly.
+        check_fuses();
 
+        // If the queue is empty, kill this thread basically.
         if (queue_empty(queuespec))
             running = 0;
 
