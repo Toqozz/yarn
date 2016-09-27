@@ -14,7 +14,8 @@ AFTER=`pkg-config --libs dbus-glib-1` \
 	`pkg-config --libs cairo` \
 	`pkg-config --libs cairo-xlib` \
 	`pkg-config --libs pango` \
-	`pkg-config --libs pangocairo`
+	`pkg-config --libs pangocairo` \
+	-lm
 CFLAGS=-Wall -g -lglib-2.0 -lpthread
 all:	dbus
 

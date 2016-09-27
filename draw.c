@@ -98,6 +98,77 @@ check_fuses (void)
     }
 }
 
+// Main animation of the bar function.
+// TODO insert multiple possible animations.
+// TODO do the real ease -- [current] and [to] arguments.
+int
+ease (int xpos, int min, int animation)
+{
+    int temp = 0;
+
+    switch(animation) {
+    case 0:
+        if (++xpos < min) {
+            xpos = xpos/1.05;
+            temp = xpos;
+        }
+        break;
+    case 1:
+        break;
+    default:
+        break;
+    }
+
+    return temp;
+}
+
+// p = period to execute the animation over (ms), s = start value,  e = end value, d = duration.
+int
+new_ease (int animation, int index, int curtime, double s, double e, double d)
+{
+    // How far along we are in the equation (0.01 - 1). (percentage).
+    double p = 0.0;
+    //printf("temp: %f\n", temp);
+    //printf("equation: %f\n", 1.0 - sqrt(1.0 - (temp*temp))*-s);
+
+    switch(animation) {
+    // circular ease in.
+    case 0:
+        p = (double)curtime/d;
+        return 1 - sqrt(1 - (p*p))*-s;
+        break;
+    // circular ease out.
+    case 1:
+        p = (double)curtime/d;
+        return sqrt((2 - p)*p)*-s + s;
+        break;
+    // circular ease in out.
+    case 2:
+        p = (double)curtime/d;
+        if (p < 0.5)
+            return 0.5 * (1 - sqrt(1 - 4 * (p * p)))*-s + s;
+        else
+            return 0.5 * (sqrt(-((2 * p) -3) * ((2 * p) -1)) + 1)*-s + s;
+        break;
+    // bounce ease out.
+    case 3:
+        p = (double) curtime/d;
+        if (p < 4/11.0)
+            return ((121 * p * p)/16.0)*-s + s;
+        else if (p < 8/11.0)
+            return ((363/40.0 * p * p) - (99/10.0 * p) + 17/5.0)*-s + s;
+        else if (p < 9/10.0)
+            return ((4356/361.0 * p * p) - (35442/1805.0 * p) + 16061/1805.0)*-s + s;
+        else
+            return ((54/5.0 * p * p) - (513/25.0 * p) + 268/25.0)*-s + s;
+        break;
+    default:
+        break;
+    }
+
+    return p;
+}
+
 void
 draw(Variables *opt, Message message)
 {
@@ -123,14 +194,20 @@ draw(Variables *opt, Message message)
     int eventpos;
     for (running = 1; running == 1; timepassed++)
     {
-
+        //printf("timepassed: %d\n", timepassed);
         // New group (everything is pre-rendered and then shown at the same time).
         cairo_push_group(context);
 
         for (int i = 0; i < queuespec.rear; i++)
         {
+            //++MessageArray[i].x < 0 ? (MessageArray[i].x = MessageArray[i].x/1.05) : (MessageArray[i].x = 0);
             // If the bar has reached the end, stop it.  Otherwise keep going.
-            ++MessageArray[i].x < 0 ? ((MessageArray[i].x = MessageArray[i].x/1.05)) : ((MessageArray[i].x = 0));
+            // Ease aka animate.
+            if (MessageArray[i].x < 0)
+                MessageArray[i].x = new_ease(2, 0, timepassed, -300, 0, 100);
+            else
+                MessageArray[i].x = 0;
+            //MessageArray[i].x = ease(MessageArray[i].x, 0, 0);
             MessageArray[i].textx++;
 
             // Draw each "panel".
@@ -144,8 +221,8 @@ draw(Variables *opt, Message message)
             pango_layout_get_pixel_extents(layout, &bextents, NULL);
 
             // Push the text to the soure.
-            cairo_set_source_rgba(context, 0,0,0,1);
             //cairo_move_to(context, (MessageArray[i].textx - bextents.width) + sextents.width, MessageArray[i].y + opt->upper);
+            cairo_set_source_rgba(context, 0,0,0,1);
             cairo_move_to(context, (opt->width - MessageArray[i].textx), MessageArray[i].texty + opt->upper);
             pango_cairo_show_layout(context, layout);
 
