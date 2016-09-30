@@ -24,6 +24,7 @@ queue_insert(Queue queuespec, Message message)
 
     return queuespec;
 }
+
 Queue
 queue_delete(Queue queuespec, int position)
 {
@@ -44,11 +45,9 @@ queue_delete(Queue queuespec, int position)
     }
     return queuespec;
 }
-bool
-queue_empty(Queue queuespec)
+
+int
+in_queue(Queue queuespec)
 {
-    if (queuespec.front == queuespec.rear)
-        return true;
-    else
-        return false;
+    return queuespec.rear;
 }

@@ -7,9 +7,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include "datatypes.h"
 #include "parse.h"
-
+#include "datatypes.h"
 
 void
 parse(char *wxh, int *xpos, int *ypos, int *width, int *height)
@@ -58,6 +57,6 @@ get_notification (int ypos, int height, int max_notifications)
         }
     }
 
-    return notification;
+    return notification-1;
 }
 

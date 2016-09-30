@@ -14,15 +14,15 @@
 #include <math.h>
 #include <assert.h>
 
+#include "draw.h"
+#include "datatypes.h"
 #include "x.h"
 #include "parse.h"
-#include "cairo.h"
-#include "datatypes.h"
 #include "queue.h"
-#include "draw.h"
+#include "cairo.h"
 
 // Interval = 33 = 30fps.
-#define INTERVAL 16.5
+#define INTERVAL 33
 
 // Nanosleep helper.
 struct timespec req = {0, INTERVAL*1000000};
@@ -34,48 +34,6 @@ struct timespec req = {0, INTERVAL*1000000};
  */
 Queue queuespec = { 0, -1 };
 Message MessageArray[QUEUESIZE];
-
-// Create a struct on the heap.
-struct Variables
-*var_create(char *font,
-            int margin, int max, int upper,
-            int gap, int rounding, int timeout, int xpos, int ypos,
-            int width, int height)
-{
-    struct Variables *info = malloc(sizeof(struct Variables));
-    assert(info != NULL);
-
-    info->font = font;
-    info->margin = margin;
-    info->max = max;
-    info->upper = upper;
-    info->gap = gap;
-    info->rounding = rounding;
-    info->timeout = timeout;
-    info->xpos = xpos;
-    info->ypos = ypos;
-    info->width = width;
-    info->height = height;
-
-    return info;
-}
-
-// Create messages on the stack.
-Message
-message_create(char *summary, char *body, int textx, int texty, int x, int y, double fuse)
-{
-    Message message;
-
-    message.summary = summary;
-    message.body = body;
-    message.textx = textx;
-    message.texty =texty;
-    message.x = x;
-    message.y = y;
-    message.fuse = fuse;
-
-    return message;
-}
 
 // Free heap memory.
 void
@@ -98,79 +56,8 @@ check_fuses (void)
     }
 }
 
-// Main animation of the bar function.
-// TODO insert multiple possible animations.
-// TODO do the real ease -- [current] and [to] arguments.
-int
-ease (int xpos, int min, int animation)
-{
-    int temp = 0;
-
-    switch(animation) {
-    case 0:
-        if (++xpos < min) {
-            xpos = xpos/1.05;
-            temp = xpos;
-        }
-        break;
-    case 1:
-        break;
-    default:
-        break;
-    }
-
-    return temp;
-}
-
-// p = period to execute the animation over (ms), s = start value,  e = end value, d = duration.
-int
-new_ease (int animation, int index, int curtime, double s, double e, double d)
-{
-    // How far along we are in the equation (0.01 - 1). (percentage).
-    double p = 0.0;
-    //printf("temp: %f\n", temp);
-    //printf("equation: %f\n", 1.0 - sqrt(1.0 - (temp*temp))*-s);
-
-    switch(animation) {
-    // circular ease in.
-    case 0:
-        p = (double)curtime/d;
-        return 1 - sqrt(1 - (p*p))*-s;
-        break;
-    // circular ease out.
-    case 1:
-        p = (double)curtime/d;
-        return sqrt((2 - p)*p)*-s + s;
-        break;
-    // circular ease in out.
-    case 2:
-        p = (double)curtime/d;
-        if (p < 0.5)
-            return 0.5 * (1 - sqrt(1 - 4 * (p * p)))*-s + s;
-        else
-            return 0.5 * (sqrt(-((2 * p) -3) * ((2 * p) -1)) + 1)*-s + s;
-        break;
-    // bounce ease out.
-    case 3:
-        p = (double) curtime/d;
-        if (p < 4/11.0)
-            return ((121 * p * p)/16.0)*-s + s;
-        else if (p < 8/11.0)
-            return ((363/40.0 * p * p) - (99/10.0 * p) + 17/5.0)*-s + s;
-        else if (p < 9/10.0)
-            return ((4356/361.0 * p * p) - (35442/1805.0 * p) + 16061/1805.0)*-s + s;
-        else
-            return ((54/5.0 * p * p) - (513/25.0 * p) + 268/25.0)*-s + s;
-        break;
-    default:
-        break;
-    }
-
-    return p;
-}
-
 void
-draw(Variables *opt, Message message)
+draw(Variables *opt)
 {
     cairo_surface_t *surface;
     cairo_t *context;
@@ -190,8 +77,7 @@ draw(Variables *opt, Message message)
     pango_font_description_free(desc); // be free my child.
 
     int running;
-    int timepassed;
-    int eventpos;
+    int timepassed = 0, eventpos = 0;
     for (running = 1; running == 1; timepassed++)
     {
         //printf("timepassed: %d\n", timepassed);
@@ -204,9 +90,10 @@ draw(Variables *opt, Message message)
             // If the bar has reached the end, stop it.  Otherwise keep going.
             // Ease aka animate.
             if (MessageArray[i].x < 0)
-                MessageArray[i].x = new_ease(2, 0, timepassed, -300, 0, 100);
+                MessageArray[i].x = ease(1, 0, timepassed, -300, 0, 50);
             else
                 MessageArray[i].x = 0;
+
             //MessageArray[i].x = ease(MessageArray[i].x, 0, 0);
             MessageArray[i].textx++;
 
@@ -255,6 +142,7 @@ draw(Variables *opt, Message message)
 
         // Clue in for x events (allows to check for hotkeys, stuff like that).
         // They're all mouse events... position is useful for deciding which notification was clicked.
+        int notification_no = 0;
         switch (check_x_event(surface, &eventpos, 0))
         {
             case -3053:
@@ -263,8 +151,18 @@ draw(Variables *opt, Message message)
             case 0xff1b:    // esc
             case -1:        // left mouse button
                 // Find out which notification was clicked and delete it.
-                printf("the notification clicked was: %d, at %d\n", get_notification(eventpos, opt->height+opt->gap, opt->max), eventpos);
-                queuespec = queue_delete(queuespec, get_notification(eventpos, opt->height+opt->gap, opt->max)-1);
+                // Move notifications below it up, if there are any.
+                notification_no = get_notification(eventpos, opt->height+opt->gap, opt->max);
+                if (in_queue(queuespec) != 1) {
+                    //printf("in_queue: %d\n", in_queue(queuespec));
+                    printf("the notification clicked was: %d, at %d\n", notification_no, eventpos);
+                    printf("from: %d\t to: %d\n", MessageArray[notification_no+1].y, MessageArray[notification_no].y);
+                    move_message(MessageArray[notification_no+1].y, MessageArray[notification_no].y, &MessageArray[notification_no]);
+                    queuespec = queue_delete(queuespec, notification_no);
+                } else {
+                    queuespec = queue_delete(queuespec, notification_no);
+                }
+
                 break;
         }
 
@@ -272,8 +170,9 @@ draw(Variables *opt, Message message)
         check_fuses();
 
         // If the queue is empty, kill this thread basically.
-        if (queue_empty(queuespec))
+        if (in_queue(queuespec) == 0) {
             running = 0;
+        }
 
         // Finally sleep ("animation").
         nanosleep(&req, &req);
