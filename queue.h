@@ -3,13 +3,16 @@
 
 #define QUEUESIZE 100
 
+#include <stdbool.h>
+#include "datatypes.h"
+
 Queue
 queue_insert(Queue queuespec, Message message);
 
 Queue
 queue_delete(Queue queuespec, int position);
 
-bool
-queue_empty(Queue queuespec);
+int
+in_queue(Queue queuespec);
 
 #endif

@@ -1,3 +1,6 @@
+#ifndef DATATYPES_H_INCLUDED
+#define DATATYPES_H_INCLUDED
+
 typedef struct Variables {
     char *font;
     int   margin;
@@ -12,12 +15,12 @@ typedef struct Variables {
     int   height;
 } Variables;
 
-typedef struct Queues {
+typedef struct Queue {
     int rear;
     int front;
 } Queue;
 
-typedef struct Messages {
+typedef struct Message {
     char *summary;
     char *body;
     int   textx;
@@ -27,7 +30,7 @@ typedef struct Messages {
     long double fuse;
 } Message;
 
-typedef struct Notifications {
+typedef struct Notification {
     char *app_name;
     char *summary;
     char *body;
@@ -35,3 +38,5 @@ typedef struct Notifications {
     int   replaces_id;
     int   expire_timeout;
 } Notification;
+
+#endif
