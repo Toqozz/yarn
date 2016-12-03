@@ -55,6 +55,7 @@ message_create(char *summary, char *body, int textx, int texty, int x, int y, do
     message.texty =texty;
     message.x = x;
     message.y = y;
+    message.visible = 1;
     message.fuse = fuse;
 
     return message;
@@ -70,8 +71,8 @@ Variables
          width = 0, height = 0,
          gap = 7, rounding = 4,
          max = 4;
-    char *font = "Incosolata 14";
-    char *dimensions = "300x25+300+300";
+    char *font = "Incosolata 11";
+    char *dimensions = "300x20+300+300";
 
     parse(dimensions, &xpos, &ypos, &width, &height);
     Variables *temp = var_create(font, margin, max, upper, gap, rounding, timeout, xpos, ypos, width, height);

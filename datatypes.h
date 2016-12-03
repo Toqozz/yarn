@@ -27,6 +27,7 @@ typedef struct Message {
     int   texty;
     int   x;
     int   y;
+    int   visible;
     long double fuse;
 } Message;
 

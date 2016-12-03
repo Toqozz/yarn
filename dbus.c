@@ -91,6 +91,7 @@ onNotify(GDBusConnection *connection,
          const gchar *sender,
          GVariant *parameters,
          GDBusMethodInvocation *invocation);
+
 static void
 onCloseNotification(GDBusConnection *connection,
                     const gchar *sender,

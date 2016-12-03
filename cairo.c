@@ -43,11 +43,11 @@ ease (int animation, int index, int curtime, double s, double e, double d)
 
     // How far along we are in the equation (0.01 - 1). (percentage).
     double p = (double)curtime/d;
-    printf("p: %f\t", p);
+    //printf("p: %f\t", p);
     // Get the 'gap' between the start and the end.
     double g = fabs(s - e);
-    printf("g: %f\t", g);
-    printf("s: %f\n", s);
+    //printf("g: %f\t", g);
+    //printf("s: %f\n", s);
 
     double temp = 0.0;
 
@@ -117,13 +117,13 @@ void
     for (running = 1; running == 1; timepassed++)
     {
         if (wrapper->message->y != wrapper->to) {
-            //printf("y = %d\n", wrapper->message->y);
+            printf("y = %d\n", wrapper->message->y);
             wrapper->message->y = ease(1, 0, timepassed, wrapper->from, wrapper->to, 33);
             wrapper->message->texty = ease(1, 0, timepassed, wrapper->from, wrapper->to, 33);
         } else {
-            printf("we is here\n");
-            //printf("done.\n");
-            printf("y = %d\nto = %d\n", wrapper->message->y, wrapper->to);
+            //printf("we is here\n");
+            printf("done.\n");
+            //printf("y = %d\tto = %d\n", wrapper->message->y, wrapper->to);
             wrapper->message->y = wrapper->to;
             wrapper->message->texty = wrapper->to;
             running = 0;

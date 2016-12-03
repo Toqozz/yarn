@@ -106,59 +106,56 @@ draw(Variables *opt)
             pango_layout_get_pixel_extents(layout, &sextents, NULL);
             pango_layout_set_markup(layout, MessageArray[i].body, -1);
             pango_layout_get_pixel_extents(layout, &bextents, NULL);
-
             // Push the text to the soure.
-            //cairo_move_to(context, (MessageArray[i].textx - bextents.width) + sextents.width, MessageArray[i].y + opt->upper);
             cairo_set_source_rgba(context, 0,0,0,1);
             cairo_move_to(context, (opt->width - MessageArray[i].textx), MessageArray[i].texty + opt->upper);
             pango_cairo_show_layout(context, layout);
 
-            // Draw over the text with a margin.
-            // This is actually enough room for the summary + the margin.
+            // Draw over the body with a margin (bit more room for summary).
             cairo_set_source_rgba(context, 1,0.5,0,1);
             cairo_rectangle(context, 0, MessageArray[i].y, opt->margin*2 + sextents.width, opt->height);
             cairo_fill(context);
-
-            // Set and push text to the soure.
-            //printf("opt->height: %d, extents.height: %d, opt->height-extents.height = %d / 2 = %f\n", opt->height, sextents.height, (opt->height - sextents.height),MessageArray[i].y + (double)(opt->height - sextents.height)/2);
+            // Set and push text to the source.
             pango_layout_set_markup(layout, MessageArray[i].summary, -1);
             cairo_set_source_rgba(context, 0,0,0,1);
             cairo_move_to(context, MessageArray[i].x + opt->margin, MessageArray[i].texty + opt->upper);
             pango_cairo_show_layout(context, layout);
 
-            // Fill empty space to prevent things like text appearing outside the rectangle.
+            // Finally clean up empty space to prevent things like text appearing outside the rectangle.
             cairo_set_source_rgba(context, 0.5,0.5,0.5,1);
             cairo_rectangle(context, MessageArray[i].x + opt->width, MessageArray[i].y, opt->width - MessageArray[i].x, opt->height);
             cairo_fill(context);
         }
 
-        // Pop the group.
         cairo_pop_group_to_source(context);
 
-        // Paint it.
+        // Paint over the group.
         cairo_set_operator(context, CAIRO_OPERATOR_SOURCE);
         cairo_paint(context);
         cairo_surface_flush(surface);
 
         // Clue in for x events (allows to check for hotkeys, stuff like that).
         // They're all mouse events... position is useful for deciding which notification was clicked.
+                    //printf("the notification clicked was: %d, at %d\n", notification_no, eventpos);
+                    //printf("from: %d\t to: %d\n", MessageArray[notification_no+1].y, MessageArray[notification_no].y);
         int notification_no = 0;
         switch (check_x_event(surface, &eventpos, 0))
         {
             case -3053:
-                //fprintf(stderr, "exposed\n");
+                // Expose event.
                 break;
-            case 0xff1b:    // esc
-            case -1:        // left mouse button
+            case -1:
                 // Find out which notification was clicked and delete it.
-                // Move notifications below it up, if there are any.
                 notification_no = get_notification(eventpos, opt->height+opt->gap, opt->max);
+
+                // Move below notifications up, if there are any.
                 if (in_queue(queuespec) != 1) {
-                    //printf("in_queue: %d\n", in_queue(queuespec));
-                    printf("the notification clicked was: %d, at %d\n", notification_no, eventpos);
-                    printf("from: %d\t to: %d\n", MessageArray[notification_no+1].y, MessageArray[notification_no].y);
-                    move_message(MessageArray[notification_no+1].y, MessageArray[notification_no].y, &MessageArray[notification_no]);
-                    queuespec = queue_delete(queuespec, notification_no);
+                    for (int i = notification_no; i < queuespec.rear; i++) {
+                        move_message(MessageArray[i+1].y, MessageArray[i].y, &MessageArray[i+1]);
+                    }
+
+                    MessageArray[notification_no].visible = 0;
+                    //queuespec = queue_delete(queuespec, notification_no);
                 } else {
                     queuespec = queue_delete(queuespec, notification_no);
                 }
