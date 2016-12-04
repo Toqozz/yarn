@@ -27,4 +27,7 @@ void
 void
 move_message (int from, int to, Message *message);
 
+void
+queue_align();
+
 #endif

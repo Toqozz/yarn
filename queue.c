@@ -30,8 +30,6 @@ queue_delete(Queue queuespec, int position)
 {
     int i = 0;
 
-    //printf("queue delet called\n");
-
     // Nothing in queue.
     if (queuespec.front == - 1)
         printf("Queue is empty -- nothing to delete.\n");
@@ -46,8 +44,19 @@ queue_delete(Queue queuespec, int position)
     return queuespec;
 }
 
+void
+queue_align (Queue queuespec) {
+    // TODO use actual measurements.
+    // TODO, put notification size somewhere globally accessible.
+    for (int i = 0; i < queuespec.rear; i++) {
+        MessageArray[i].y = i * 30;
+        MessageArray[i].texty = i * 30;
+    }
+}
+
 int
 in_queue(Queue queuespec)
 {
     return queuespec.rear;
 }
+

@@ -117,13 +117,11 @@ void
     for (running = 1; running == 1; timepassed++)
     {
         if (wrapper->message->y != wrapper->to) {
-            printf("y = %d\n", wrapper->message->y);
+            //printf("y = %d\n", wrapper->message->y);
             wrapper->message->y = ease(1, 0, timepassed, wrapper->from, wrapper->to, 33);
             wrapper->message->texty = ease(1, 0, timepassed, wrapper->from, wrapper->to, 33);
         } else {
-            //printf("we is here\n");
             printf("done.\n");
-            //printf("y = %d\tto = %d\n", wrapper->message->y, wrapper->to);
             wrapper->message->y = wrapper->to;
             wrapper->message->texty = wrapper->to;
             running = 0;
@@ -135,16 +133,19 @@ void
     return NULL;
 }
 
-// Move a notification to somewhere else cleanly (vertically)..
+// Move a notification to somewhere else along the stack cleanly (vertically)..
 void
 move_message (int from, int to, Message *message)
 {
     pthread_t move_msg_thread;
 
+    //TODO free this.
     struct Wrapper *arg_wrapper = malloc(sizeof(struct Wrapper));
     arg_wrapper->from = from;
     arg_wrapper->to = to;
     arg_wrapper->message = message;
 
     pthread_create(&move_msg_thread, NULL, move_message_thread, arg_wrapper);
+    pthread_join(move_msg_thread, NULL);
 }
+

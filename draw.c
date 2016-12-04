@@ -84,47 +84,53 @@ draw(Variables *opt)
         // New group (everything is pre-rendered and then shown at the same time).
         cairo_push_group(context);
 
+        // Draw each panel.
         for (int i = 0; i < queuespec.rear; i++)
         {
-            //++MessageArray[i].x < 0 ? (MessageArray[i].x = MessageArray[i].x/1.05) : (MessageArray[i].x = 0);
-            // If the bar has reached the end, stop it.  Otherwise keep going.
-            // Ease aka animate.
-            if (MessageArray[i].x < 0)
-                MessageArray[i].x = ease(1, 0, timepassed, -300, 0, 50);
-            else
-                MessageArray[i].x = 0;
+            if (MessageArray[i].visible)
+            {
+                MessageArray[i].textx++;
 
-            //MessageArray[i].x = ease(MessageArray[i].x, 0, 0);
-            MessageArray[i].textx++;
+                // Nested rectangles for a border.
+                cairo_set_source_rgba(context, 0.92156,0.8588,0.69804,1);
+                cairo_rectangle (context, MessageArray[i].x,
+                                          MessageArray[i].y,
+                                          opt->width,
+                                          opt->height);
+                cairo_fill(context);
 
-            // Draw each "panel".
-            rounded_rectangle(MessageArray[i].x, MessageArray[i].y, opt->width, opt->height, 1, opt->rounding, context, 1,0.5,0,1);
+                cairo_set_source_rgba(context, 0.298,0.2078,0.172549,1);
+                cairo_rectangle (context, MessageArray[i].x + opt->bw,
+                                          MessageArray[i].y + opt->bw,
+                                          opt->width - opt->bw*2,
+                                          opt->height - opt->bw*2);
+                cairo_fill(context);
 
-            // Allow markup on the string.
-            // Pixel extents are much better for this purpose.
-            pango_layout_set_markup(layout, MessageArray[i].summary, -1);
-            pango_layout_get_pixel_extents(layout, &sextents, NULL);
-            pango_layout_set_markup(layout, MessageArray[i].body, -1);
-            pango_layout_get_pixel_extents(layout, &bextents, NULL);
-            // Push the text to the soure.
-            cairo_set_source_rgba(context, 0,0,0,1);
-            cairo_move_to(context, (opt->width - MessageArray[i].textx), MessageArray[i].texty + opt->upper);
-            pango_cairo_show_layout(context, layout);
+                // Pixel extents are much better for this purpose.
+                pango_layout_set_markup(layout, MessageArray[i].summary, -1);
+                pango_layout_get_pixel_extents(layout, &sextents, NULL);
+                pango_layout_set_markup(layout, MessageArray[i].body, -1);
+                pango_layout_get_pixel_extents(layout, &bextents, NULL);
 
-            // Draw over the body with a margin (bit more room for summary).
-            cairo_set_source_rgba(context, 1,0.5,0,1);
-            cairo_rectangle(context, 0, MessageArray[i].y, opt->margin*2 + sextents.width, opt->height);
-            cairo_fill(context);
-            // Set and push text to the source.
-            pango_layout_set_markup(layout, MessageArray[i].summary, -1);
-            cairo_set_source_rgba(context, 0,0,0,1);
-            cairo_move_to(context, MessageArray[i].x + opt->margin, MessageArray[i].texty + opt->upper);
-            pango_cairo_show_layout(context, layout);
+                // Push the body to the soure.
+                cairo_set_source_rgba(context, 0.92156,0.8588,0.69804,1);
+                cairo_move_to(context, (opt->width - MessageArray[i].textx), MessageArray[i].texty + opt->upper);
+                pango_cairo_show_layout(context, layout);
+    
+                // Draw over the body with a margin (+ bit more room for summary).
+                cairo_set_source_rgba(context, 0.298,0.2078,0.172549,1);
+                cairo_rectangle(context, MessageArray[i].x + opt->bw,
+                                         MessageArray[i].y + opt->bw,
+                                         opt->margin + sextents.width,
+                                         opt->height - opt->bw*2);
+                cairo_fill(context);
 
-            // Finally clean up empty space to prevent things like text appearing outside the rectangle.
-            cairo_set_source_rgba(context, 0.5,0.5,0.5,1);
-            cairo_rectangle(context, MessageArray[i].x + opt->width, MessageArray[i].y, opt->width - MessageArray[i].x, opt->height);
-            cairo_fill(context);
+                // Set and push summary to the source.
+                pango_layout_set_markup(layout, MessageArray[i].summary, -1);
+                cairo_set_source_rgba(context, 0.92156,0.8588,0.69804,1);
+                cairo_move_to(context, MessageArray[i].x + opt->margin, MessageArray[i].texty + opt->upper);
+                pango_cairo_show_layout(context, layout);
+            }
         }
 
         cairo_pop_group_to_source(context);
@@ -136,26 +142,19 @@ draw(Variables *opt)
 
         // Clue in for x events (allows to check for hotkeys, stuff like that).
         // They're all mouse events... position is useful for deciding which notification was clicked.
-                    //printf("the notification clicked was: %d, at %d\n", notification_no, eventpos);
-                    //printf("from: %d\t to: %d\n", MessageArray[notification_no+1].y, MessageArray[notification_no].y);
         int notification_no = 0;
         switch (check_x_event(surface, &eventpos, 0))
         {
-            case -3053:
-                // Expose event.
+            case -3053:         // exposed.
                 break;
             case -1:
-                // Find out which notification was clicked and delete it.
+                // Find out which notification was clicked.
                 notification_no = get_notification(eventpos, opt->height+opt->gap, opt->max);
 
-                // Move below notifications up, if there are any.
+                // Delete and move below notifications up, if there are any.
                 if (in_queue(queuespec) != 1) {
-                    for (int i = notification_no; i < queuespec.rear; i++) {
-                        move_message(MessageArray[i+1].y, MessageArray[i].y, &MessageArray[i+1]);
-                    }
-
-                    MessageArray[notification_no].visible = 0;
-                    //queuespec = queue_delete(queuespec, notification_no);
+                    queuespec = queue_delete(queuespec, notification_no);
+                    queue_align(queuespec);
                 } else {
                     queuespec = queue_delete(queuespec, notification_no);
                 }

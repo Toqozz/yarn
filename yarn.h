@@ -5,8 +5,8 @@
 
 Variables
 *var_create(char *font,
-            int margin, int number, int upper,
-            int gap, int rounding, int timeout, int xpos, int ypos,
+            int margin, int max, int gap, int upper,
+            int bw, char* bc, int rounding, int timeout, int xpos, int ypos,
             int width, int height);
 
 Message

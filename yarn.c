@@ -10,29 +10,34 @@
 #include "parse.h"
 #include "draw.h"
 #include "queue.h"
+#include "cairo.h"
 
 // pthread types.
 pthread_t split_notification;
 pthread_mutex_t stack_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 extern Queue queuespec;
+extern Message MessageArray[QUEUESIZE];
 static bool THREAD_ALIVE = false;
 
 // Create a struct on the heap.
 struct Variables
 *var_create(char *font,
-            int margin, int max, int upper,
-            int gap, int rounding, int timeout, int xpos, int ypos,
+            int margin, int max, int gap, int upper, int bw, char *bc,
+            int rounding, int timeout, int xpos, int ypos,
             int width, int height)
 {
+    // TODO make sure that this gets freed.
     struct Variables *info = malloc(sizeof(struct Variables));
     assert(info != NULL);
 
     info->font = font;
     info->margin = margin;
     info->max = max;
-    info->upper = upper;
     info->gap = gap;
+    info->upper = upper;
+    info->bw = bw;
+    info->bc = bc;
     info->rounding = rounding;
     info->timeout = timeout;
     info->xpos = xpos;
@@ -67,15 +72,16 @@ Variables
     // Option initialization.
     double timeout = 10;
     int  margin = 5, upper = 0,
-         xpos = 0, ypos = 0,
-         width = 0, height = 0,
-         gap = 7, rounding = 4,
-         max = 4;
-    char *font = "Incosolata 11";
-    char *dimensions = "300x20+300+300";
+         bw = 3, xpos = 0,
+         ypos = 0, width = 0,
+         height = 0, gap = 7,
+         rounding = 4, max = 4;
+    char *font = "Inconsolata 11";
+    char *dimensions = "300x23+10+10";
+    char *bc = "ebdbb2";
 
     parse(dimensions, &xpos, &ypos, &width, &height);
-    Variables *temp = var_create(font, margin, max, upper, gap, rounding, timeout, xpos, ypos, width, height);
+    Variables *temp = var_create(font, margin, max, gap, upper, bw, bc, rounding, timeout, xpos, ypos, width, height);
 }
 
 void
@@ -92,7 +98,7 @@ void
                                      n->body,       // notify body
                                      0,             // text x
                                      0,             // text y
-                                     -opt->width,   // x
+                                     0,             // x
                                      0,             // y
                                      opt->timeout); // fuse
     queuespec = queue_insert(queuespec, message);
@@ -117,13 +123,26 @@ prepare(Notification *n)
         THREAD_ALIVE = true;
     } else {
         Variables *opt = var_initialize();
-        queuespec = queue_insert(queuespec, message_create(n->summary,
-                                                           n->body,
-                                                           0,
-                                                           queuespec.rear * (opt->height + opt->gap),
-                                                           -opt->width,
-                                                           queuespec.rear * (opt->height + opt->gap),
-                                                           opt->timeout));
+        if (queuespec.rear >= opt->max) {
+            queuespec = queue_delete(queuespec, 0);
+            queue_align(queuespec);
+
+            queuespec = queue_insert(queuespec, message_create(n->summary,
+                                                               n->body,
+                                                               0,
+                                                               queuespec.rear * (opt->height + opt->gap),
+                                                               0,
+                                                               queuespec.rear * (opt->height + opt->gap),
+                                                               opt->timeout));
+        } else {
+            queuespec = queue_insert(queuespec, message_create(n->summary,
+                                                               n->body,
+                                                               0,
+                                                               queuespec.rear * (opt->height + opt->gap),
+                                                               0,
+                                                               queuespec.rear * (opt->height + opt->gap),
+                                                               opt->timeout));
+        }
     }
 
     //free(n);

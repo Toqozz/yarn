@@ -5,8 +5,10 @@ typedef struct Variables {
     char *font;
     int   margin;
     int   max;
-    int   upper;
     int   gap;
+    int   upper;
+    int   bw;
+    char *bc;
     int   rounding;
     int   timeout;
     int   xpos;

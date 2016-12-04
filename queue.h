@@ -12,6 +12,9 @@ queue_insert(Queue queuespec, Message message);
 Queue
 queue_delete(Queue queuespec, int position);
 
+void
+queue_align(Queue queuespec);
+
 int
 in_queue(Queue queuespec);
 
