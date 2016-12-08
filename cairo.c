@@ -104,6 +104,7 @@ ease (int animation, int index, int curtime, double s, double e, double d)
         return (int)round(s - temp);
 }
 
+// TODO, change this to work off positions -> similar to 'align'.
 void
 *move_message_thread (void *arg_wrapper)
 {

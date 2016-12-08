@@ -78,6 +78,7 @@ draw(Variables *opt)
 
     int running;
     int timepassed = 0, eventpos = 0;
+    // TODO, optomize this for timings.
     for (running = 1; running == 1; timepassed++)
     {
         //printf("timepassed: %d\n", timepassed);
@@ -116,7 +117,7 @@ draw(Variables *opt)
                 cairo_set_source_rgba(context, 0.92156,0.8588,0.69804,1);
                 cairo_move_to(context, (opt->width - MessageArray[i].textx), MessageArray[i].texty + opt->upper);
                 pango_cairo_show_layout(context, layout);
-    
+
                 // Draw over the body with a margin (+ bit more room for summary).
                 cairo_set_source_rgba(context, 0.298,0.2078,0.172549,1);
                 cairo_rectangle(context, MessageArray[i].x + opt->bw,

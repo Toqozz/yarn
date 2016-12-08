@@ -41,6 +41,7 @@ queue_delete(Queue queuespec, int position)
             MessageArray[i] = MessageArray[i+1];
         queuespec.rear--;
     }
+
     return queuespec;
 }
 

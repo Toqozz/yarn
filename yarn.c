@@ -11,6 +11,7 @@
 #include "draw.h"
 #include "queue.h"
 #include "cairo.h"
+#include "config.h"
 
 // pthread types.
 pthread_t split_notification;
@@ -77,7 +78,7 @@ Variables
          height = 0, gap = 7,
          rounding = 4, max = 4;
     char *font = "Inconsolata 11";
-    char *dimensions = "300x23+10+10";
+    char *dimensions = "300x23+1930+10";
     char *bc = "ebdbb2";
 
     parse(dimensions, &xpos, &ypos, &width, &height);
@@ -105,7 +106,6 @@ void
 
     draw(opt);
 
-    //pthread_mutex_destroy(&stack_mutex);
     free(arg);
 
     THREAD_ALIVE = false;
@@ -116,8 +116,9 @@ void
 void
 prepare(Notification *n)
 {
-    // If there aren't any notifications being shown, we need to create a new thread.
-    // If there are notifications being shown, simply add the new notification to the queue.
+    Config tempconfig;
+    parse_config("./config", tempconfig);
+
     if (THREAD_ALIVE == false) {
         pthread_create(&split_notification, NULL, run, n);
         THREAD_ALIVE = true;
@@ -127,6 +128,7 @@ prepare(Notification *n)
             queuespec = queue_delete(queuespec, 0);
             queue_align(queuespec);
 
+            // If there aren't any notifications being shown, we need to create a new thread.
             queuespec = queue_insert(queuespec, message_create(n->summary,
                                                                n->body,
                                                                0,
@@ -135,6 +137,7 @@ prepare(Notification *n)
                                                                queuespec.rear * (opt->height + opt->gap),
                                                                opt->timeout));
         } else {
+            // If there are notifications being shown, simply add the new notification to the queue.
             queuespec = queue_insert(queuespec, message_create(n->summary,
                                                                n->body,
                                                                0,
@@ -144,6 +147,4 @@ prepare(Notification *n)
                                                                opt->timeout));
         }
     }
-
-    //free(n);
 }

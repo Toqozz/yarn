@@ -15,11 +15,12 @@ AFTER=`pkg-config --libs dbus-glib-1` \
 	`pkg-config --libs cairo-xlib` \
 	`pkg-config --libs pango` \
 	`pkg-config --libs pangocairo` \
+	`pkg-config --libs libconfig` \
 	-lm
-CFLAGS=-Wall -g -lglib-2.0 -lpthread
+CFLAGS=-Wall -g -pthread
 all:	dbus
 
 dbus:
-	$(CC) $(BEFORE)	dbus.c parse.c x.c cairo.c draw.c queue.c yarn.c 	$(AFTER) -o dbus
+	$(CC) $(BEFORE)	dbus.c parse.c config.c x.c cairo.c draw.c queue.c yarn.c 	$(AFTER) -o dbus
 clean:
 	rm -f dbus

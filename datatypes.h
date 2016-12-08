@@ -1,6 +1,29 @@
 #ifndef DATATYPES_H_INCLUDED
 #define DATATYPES_H_INCLUDED
 
+typedef struct Config {
+    int max_notifications;
+
+    const char *dimensions;
+    const char *summary_color;
+    const char *body_color;
+    const char *fgcolor;
+    const char *bgcolor;
+    const char *bdcolor;
+
+    double interval;
+
+    int timeout;
+    int scroll_speed;
+
+    const char *font;
+
+    int margin;
+    int overline;
+    int bw;
+    int rounding;
+} Config;
+
 typedef struct Variables {
     char *font;
     int   margin;
