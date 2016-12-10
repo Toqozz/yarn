@@ -13,10 +13,7 @@
 void
 parse(const char *wxh, int *xpos, int *ypos, int *width, int *height)
 {
-    char *x;
-    char *y;
-    char *w;
-    char *h;
+    char *x, *y, *w, *h;
 
     // We need something that is mutable.
     // Remember pointer position (it's being mutated).
@@ -61,7 +58,29 @@ get_notification (int ypos, int height, int max_notifications)
 }
 
 Color
-hex_to_rgb(const char *hex_color)
+hex_to_rgba(const char *hex_color)
 {
+    int a, r, g, b;
+
+    // First turn string into hex.
+    int hex;
+    sscanf(hex_color, "#%x", &hex);
+
+    // Move bits around and take out specific parts.
+    //a = ((hex >> 24) & 0xff) / 255.0;
+    //r = ((hex >> 16) & 0xff) / 255.0;
+    //g = ((hex >> 8) & 0xff) / 255.0;
+    //b = (hex & 0xff) / 255.0;
+
+    a = ((hex >> 24) & 0xff);
+    r = ((hex >> 16) & 0xff);
+    g = ((hex >> 8) & 0xff);
+    b = (hex & 0xff);
+
+    printf("a: %x-%d\nr: %x-%d\ng: %x-%d\nb: %x-%d\n", a, a, r, r, g, g, b, b);
+
+    Color rgba = {r, g, b, a};
+
+    return rgba;
 }
 
