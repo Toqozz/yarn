@@ -78,6 +78,7 @@ draw(Variables *opt)
 
     int running;
     int timepassed = 0, eventpos = 0;
+
     // TODO, optomize this for timings.
     for (running = 1; running == 1; timepassed++)
     {
@@ -115,7 +116,7 @@ draw(Variables *opt)
 
                 // Push the body to the soure.
                 cairo_set_source_rgba(context, 0.92156,0.8588,0.69804,1);
-                cairo_move_to(context, (opt->width - MessageArray[i].textx), MessageArray[i].texty + opt->upper);
+                cairo_move_to(context, (opt->width - MessageArray[i].textx), MessageArray[i].texty + opt->overline);
                 pango_cairo_show_layout(context, layout);
 
                 // Draw over the body with a margin (+ bit more room for summary).
@@ -129,7 +130,7 @@ draw(Variables *opt)
                 // Set and push summary to the source.
                 pango_layout_set_markup(layout, MessageArray[i].summary, -1);
                 cairo_set_source_rgba(context, 0.92156,0.8588,0.69804,1);
-                cairo_move_to(context, MessageArray[i].x + opt->margin, MessageArray[i].texty + opt->upper);
+                cairo_move_to(context, MessageArray[i].x + opt->margin, MessageArray[i].texty + opt->overline);
                 pango_cairo_show_layout(context, layout);
             }
         }

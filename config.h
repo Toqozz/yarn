@@ -3,6 +3,8 @@
 
 #include "datatypes.h"
 
-int parse_config(char *file, Config c);
+int parse_config(char *file, Config *c);
+
+int parse_convert(Config *c, Variables *v);
 
 #endif

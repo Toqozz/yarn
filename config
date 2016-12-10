@@ -1,0 +1,75 @@
+// Configuration file for yarn -- the notification daemon.
+
+// The maximum number of notifications to be shown at any one time.
+// When the maximum number is reached, old notifications will be pushed out to make way for new ones.
+max_notifications = 4;
+
+// Gap between multiple notifications;
+gap = 7;
+
+// Notification settings and positioning.
+notification:
+{
+    // Dimensions in the format of wxh+x+y:
+    geometry = "300x30+30+40";
+
+    // Colors in #AARRGGBB format;
+    summary_color = "FFFFFFFF";
+    body_color    = "FFFFFFFF";
+    bgcolor = "FF000000";
+    fgcolor = "FFFFFFFF";
+    bdcolor = "FFFFFFFF";
+
+    // Interval between refreshes (in ms).  Lower values mean smoother animation but more work.
+    // 16.5 = 60fps
+    // 33   = 30fps
+    interval = 33;
+
+    // Default time for notifications to be shown for:
+    timeout = 7;
+
+    // Speed at which text scrolls across the screen. (pixels per second?)
+    scroll_speed = 5;
+
+    // Font.
+    font = "GohuFont 11";
+
+    // Margin.
+    margin = 2;
+
+    // Upper margin.
+    overline = 3;
+
+    // Border thickness.
+    bw = 3;
+
+    // Rounding around the edges of a notification. (higehr number means more rounding).
+    rounding = 0;
+}
+
+// Hotkeys -- do stuff.
+// Utility windows do not get keyboard input by default (as they are not focused)...
+//  so you're pretty restricted to mouse events here.
+
+// left click:   -1
+// middle click: -2
+// right click:  -3
+// mwheelup:     -4
+// mwheeldown:   -5
+// mouse5:       -8
+// mouse4:       -9
+
+shortcuts:
+{
+    // Close a notification:
+    notification_close = -1;
+
+    // Close all notifications:
+    notification_closeall = -5;
+
+    // Pause a notification, resume it with the same button:
+    notification_pause = -2;
+
+    // Try to find a url in the notification and open it in the default browser:
+    notification_url = -3;
+}

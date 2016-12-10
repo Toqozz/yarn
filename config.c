@@ -4,8 +4,9 @@
 
 #include "config.h"
 #include "datatypes.h"
+#include "parse.h"
 
-int parse_config(char *file, Config c)
+int parse_config(char *file, Config *c)
 {
     config_t cfg;
     config_setting_t *setting;
@@ -15,45 +16,71 @@ int parse_config(char *file, Config c)
     /* Read the file. If there is an error, report it and exit. */
     if (!config_read_file(&cfg, file))
     {
-        fprintf(stderr, "%s:%d - %s\n", config_error_file(&cfg),
-                config_error_line(&cfg), config_error_text(&cfg));
+        fprintf(stderr, "%s:%d - %s\n", config_error_file(&cfg), config_error_line(&cfg), config_error_text(&cfg));
         config_destroy(&cfg);
 
         return(EXIT_FAILURE);
     }
 
     /* Get the max notifications. */
-    if (!config_lookup_int(&cfg, "max_notifications", &c.max_notifications))
-        fprintf(stderr, "No 'name' setting in configuration file.\n");
+    if (!config_lookup_int(&cfg, "max_notifications", &c->max_notifications))
+        fprintf(stderr, "No 'max_notifications' setting in configuration file.\n");
 
+    if (!config_lookup_int(&cfg, "gap", &c->gap))
+        fprintf(stderr, "No 'gap' setting in configuration file.\n");
 
     setting = config_lookup(&cfg, "notification");
     if (setting != NULL)
     {
-        config_setting_lookup_string(setting, "dimensions", &c.dimensions);
-        config_setting_lookup_string(setting, "summary_color", &c.summary_color);
-        config_setting_lookup_string(setting, "body_color", &c.body_color);
-        config_setting_lookup_string(setting, "bgcolor", &c.bgcolor);
-        config_setting_lookup_string(setting, "fgcolor", &c.fgcolor);
-        config_setting_lookup_string(setting, "bdcolor", &c.bdcolor);
+        config_setting_lookup_string(setting, "geometry", &c->geometry);
+        config_setting_lookup_string(setting, "summary_color", &c->summary_color);
+        config_setting_lookup_string(setting, "body_color", &c->body_color);
+        config_setting_lookup_string(setting, "bgcolor", &c->bgcolor);
+        config_setting_lookup_string(setting, "fgcolor", &c->fgcolor);
+        config_setting_lookup_string(setting, "bdcolor", &c->bdcolor);
 
-        config_setting_lookup_float(setting, "interval", &c.interval);
-        config_setting_lookup_int(setting, "timeout", &c.timeout);
-        config_setting_lookup_int(setting, "scroll_speed", &c.scroll_speed);
+        config_setting_lookup_float(setting, "interval", &c->interval);
+        config_setting_lookup_int(setting, "timeout", &c->timeout);
+        config_setting_lookup_int(setting, "scroll_speed", &c->scroll_speed);
 
-        config_setting_lookup_string(setting, "font", &c.font);
+        config_setting_lookup_string(setting, "font", &c->font);
 
-        config_setting_lookup_int(setting, "margin", &c.margin);
-        config_setting_lookup_int(setting, "overline", &c.overline);
-        config_setting_lookup_int(setting, "bw", &c.bw);
-        config_setting_lookup_int(setting, "rounding", &c.rounding);
+        config_setting_lookup_int(setting, "margin", &c->margin);
+        config_setting_lookup_int(setting, "overline", &c->overline);
+        config_setting_lookup_int(setting, "bw", &c->bw);
+        config_setting_lookup_int(setting, "rounding", &c->rounding);
 
-        printf("max_notifications: \t%d\ndimensions: \t%s\nsummary_color: \t%s\nbody_color: \t%s\nbgcolor: \t%s\nfgcolor: \t%s\n bdcolor \t%s\n", c.max_notifications, c.dimensions, c.summary_color, c.body_color, c.bgcolor, c.fgcolor, c.bdcolor);
+        printf("max_notif: \t%d\ndimensions: \t%s\nsummary_color: \t%s\nbody_color: \t%s\nbgcolor: \t%s\nfgcolor: \t%s\nbdcolor \t%s\n", c->max_notifications, c->geometry, c->summary_color, c->body_color, c->bgcolor, c->fgcolor, c->bdcolor);
     }
 
     config_destroy(&cfg);
+
     return(EXIT_SUCCESS);
 }
+
+int parse_convert(Config *c, Variables *v)
+{
+    //char *bc = "ebdbb2";
+
+    parse(c->geometry, &v->xpos, &v->ypos, &v->width, &v->height);
+
+    v->font = c->font;
+    v->margin = c->margin;
+    v->max = c->max_notifications;
+    v->gap = c->gap;
+    v->overline = c->overline;
+    v->bw = c->bw;
+    v->rounding = c->rounding;
+}
+
+
+
+
+
+
+
+
+
     /* Output a list of all books in the inventory. */
     //setting = config_lookup(&cfg, "inventory.books");
     //if(setting != NULL)

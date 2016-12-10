@@ -3,8 +3,10 @@
 
 typedef struct Config {
     int max_notifications;
+    int gap;
 
-    const char *dimensions;
+    const char *geometry;
+
     const char *summary_color;
     const char *body_color;
     const char *fgcolor;
@@ -25,15 +27,17 @@ typedef struct Config {
 } Config;
 
 typedef struct Variables {
-    char *font;
+    const char *font;
+    const char *bc;
+
+    double timeout;
+
     int   margin;
     int   max;
     int   gap;
-    int   upper;
+    int   overline;
     int   bw;
-    char *bc;
     int   rounding;
-    int   timeout;
     int   xpos;
     int   ypos;
     int   width;
@@ -64,5 +68,12 @@ typedef struct Notification {
     int   replaces_id;
     int   expire_timeout;
 } Notification;
+
+typedef struct Color {
+    double red;
+    double green;
+    double blue;
+    double alpha;
+} Color;
 
 #endif

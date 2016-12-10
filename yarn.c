@@ -22,49 +22,58 @@ extern Message MessageArray[QUEUESIZE];
 static bool THREAD_ALIVE = false;
 
 // Create a struct on the heap.
-struct Variables
+Variables
 *var_create(char *font,
-            int margin, int max, int gap, int upper, int bw, char *bc,
+            int margin, int max, int gap, int overline, int bw, char *bc,
             int rounding, int timeout, int xpos, int ypos,
             int width, int height)
 {
     // TODO make sure that this gets freed.
-    struct Variables *info = malloc(sizeof(struct Variables));
-    assert(info != NULL);
+    Variables *v = malloc(sizeof(Variables));
+    assert(v != NULL);
 
-    info->font = font;
-    info->margin = margin;
-    info->max = max;
-    info->gap = gap;
-    info->upper = upper;
-    info->bw = bw;
-    info->bc = bc;
-    info->rounding = rounding;
-    info->timeout = timeout;
-    info->xpos = xpos;
-    info->ypos = ypos;
-    info->width = width;
-    info->height = height;
+    v->font = font;
+    v->margin = margin;
+    v->max = max;
+    v->gap = gap;
+    v->overline = overline;
+    v->bw = bw;
+    v->bc = bc;
+    v->rounding = rounding;
+    v->timeout = timeout;
+    v->xpos = xpos;
+    v->ypos = ypos;
+    v->width = width;
+    v->height = height;
 
-    return info;
+    return v;
+}
+
+Config
+*cfg_create(void)
+{
+    Config *c = malloc(sizeof(Config));
+    assert(c != NULL);
+
+    return c;
 }
 
 // Create messages on the stack.
 Message
 message_create(char *summary, char *body, int textx, int texty, int x, int y, double fuse)
 {
-    Message message;
+    Message m;
 
-    message.summary = summary;
-    message.body = body;
-    message.textx = textx;
-    message.texty =texty;
-    message.x = x;
-    message.y = y;
-    message.visible = 1;
-    message.fuse = fuse;
+    m.summary = summary;
+    m.body = body;
+    m.textx = textx;
+    m.texty =texty;
+    m.x = x;
+    m.y = y;
+    m.visible = 1;
+    m.fuse = fuse;
 
-    return message;
+    return m;
 }
 
 Variables
@@ -90,8 +99,6 @@ void
 {
     Notification *n = (Notification*) arg;
 
-    //parse(dimensions, &xpos, &ypos, &width, &height);
-    //Variables *opt = var_create(font, margin, max, upper, gap, rounding, timeout, xpos, ypos, width, height);
     Variables *opt = var_initialize();
 
     // string, text x, text y, x, y, fuse.
@@ -104,8 +111,10 @@ void
                                      opt->timeout); // fuse
     queuespec = queue_insert(queuespec, message);
 
+    // Draw...
     draw(opt);
 
+    // Notification is freed when its done.
     free(arg);
 
     THREAD_ALIVE = false;
@@ -116,9 +125,6 @@ void
 void
 prepare(Notification *n)
 {
-    Config tempconfig;
-    parse_config("./config", tempconfig);
-
     if (THREAD_ALIVE == false) {
         pthread_create(&split_notification, NULL, run, n);
         THREAD_ALIVE = true;

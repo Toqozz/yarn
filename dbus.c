@@ -5,8 +5,10 @@
 #include <dbus/dbus.h>
 #include <assert.h>
 
+#include "dbus.h"
 #include "datatypes.h"
 #include "yarn.h"
+//#include "config.h"
 
 // mainly from dunst, demistifyed a lot of dbus in c for me.
 
@@ -295,9 +297,9 @@ on_name_lost (GDBusConnection *connection,
 
 
 
-
 int
-main (int argc, char *argv[])
+//main (int argc, char *argv[])
+yarn_init(void)
 {
     //guint owner_id;
 

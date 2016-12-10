@@ -11,7 +11,7 @@
 #include "datatypes.h"
 
 void
-parse(char *wxh, int *xpos, int *ypos, int *width, int *height)
+parse(const char *wxh, int *xpos, int *ypos, int *width, int *height)
 {
     char *x;
     char *y;
@@ -58,5 +58,10 @@ get_notification (int ypos, int height, int max_notifications)
     }
 
     return notification-1;
+}
+
+Color
+hex_to_rgb(const char *hex_color)
+{
 }
 
