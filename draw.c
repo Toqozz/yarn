@@ -34,18 +34,21 @@ struct timespec req = {0, INTERVAL*1000000};
  */
 Queue queuespec = { 0, -1 };
 Message MessageArray[QUEUESIZE];
+extern Variables opt;
 
 // Free heap memory.
+/*
 void
 var_destroy(Variables *destroy)
 {
     assert(destroy != NULL);
     free(destroy);
 }
+*/
 
 // Check on each message's fuse and delete burnt ones from the queue.
 void
-check_fuses (void)
+check_fuses(void)
 {
     for (int i = 0; i < queuespec.rear; i++)
     {
@@ -53,11 +56,12 @@ check_fuses (void)
         MessageArray[i].fuse = MessageArray[i].fuse - (double) INTERVAL/1000;
         if (MessageArray[i].fuse <= 0)
             queuespec = queue_delete(queuespec, i);
+            queue_align(queuespec);
     }
 }
 
 void
-draw(Variables *opt)
+draw(void)
 {
     cairo_surface_t *surface;
     cairo_t *context;
@@ -67,19 +71,20 @@ draw(Variables *opt)
     PangoFontDescription *desc;
 
     // Surface for drawing on, layout for putting the font on.
-    surface = cairo_create_x11_surface(opt->xpos, opt->ypos, opt->width, (opt->height + opt->gap) * opt->max);
+    surface = cairo_create_x11_surface(opt.xpos, opt.ypos, opt.width, (opt.height + opt.gap) * opt.max_notifications);
     context = cairo_create(surface);
     layout = pango_cairo_create_layout (context);
 
     // Font selection with pango.
-    desc = pango_font_description_from_string(opt->font);
+    desc = pango_font_description_from_string(opt.font);
     pango_layout_set_font_description(layout, desc);
     pango_font_description_free(desc); // be free my child.
 
     int running;
     int timepassed = 0, eventpos = 0;
 
-    // TODO, optomize this for timings.
+    // TODO, opt.mize this for timings.
+    // TODO, shadows...
     for (running = 1; running == 1; timepassed++)
     {
         //printf("timepassed: %d\n", timepassed);
@@ -93,20 +98,7 @@ draw(Variables *opt)
             {
                 MessageArray[i].textx++;
 
-                // Nested rectangles for a border.
-                cairo_set_source_rgba(context, 0.92156,0.8588,0.69804,1);
-                cairo_rectangle (context, MessageArray[i].x,
-                                          MessageArray[i].y,
-                                          opt->width,
-                                          opt->height);
-                cairo_fill(context);
-
-                cairo_set_source_rgba(context, 0.298,0.2078,0.172549,1);
-                cairo_rectangle (context, MessageArray[i].x + opt->bw,
-                                          MessageArray[i].y + opt->bw,
-                                          opt->width - opt->bw*2,
-                                          opt->height - opt->bw*2);
-                cairo_fill(context);
+                draw_panel(context, opt.bdcolor, opt.bgcolor, MessageArray[i].x, MessageArray[i].y, opt.width, opt.height, opt.bw);
 
                 // Pixel extents are much better for this purpose.
                 pango_layout_set_markup(layout, MessageArray[i].summary, -1);
@@ -115,22 +107,22 @@ draw(Variables *opt)
                 pango_layout_get_pixel_extents(layout, &bextents, NULL);
 
                 // Push the body to the soure.
-                cairo_set_source_rgba(context, 0.92156,0.8588,0.69804,1);
-                cairo_move_to(context, (opt->width - MessageArray[i].textx), MessageArray[i].texty + opt->overline);
+                cairo_set_source_rgba(context, opt.body_color.red, opt.body_color.green, opt.body_color.blue, opt.body_color.alpha);
+                cairo_move_to(context, (opt.width - MessageArray[i].textx), MessageArray[i].texty + opt.overline);
                 pango_cairo_show_layout(context, layout);
 
                 // Draw over the body with a margin (+ bit more room for summary).
-                cairo_set_source_rgba(context, 0.298,0.2078,0.172549,1);
-                cairo_rectangle(context, MessageArray[i].x + opt->bw,
-                                         MessageArray[i].y + opt->bw,
-                                         opt->margin + sextents.width,
-                                         opt->height - opt->bw*2);
+                cairo_set_source_rgba(context, opt.bgcolor.red, opt.bgcolor.green, opt.bgcolor.blue, opt.bgcolor.alpha);
+                cairo_rectangle(context, MessageArray[i].x + opt.bw,
+                                         MessageArray[i].y + opt.bw,
+                                         opt.margin + sextents.width,
+                                         opt.height - opt.bw*2);
                 cairo_fill(context);
 
                 // Set and push summary to the source.
                 pango_layout_set_markup(layout, MessageArray[i].summary, -1);
-                cairo_set_source_rgba(context, 0.92156,0.8588,0.69804,1);
-                cairo_move_to(context, MessageArray[i].x + opt->margin, MessageArray[i].texty + opt->overline);
+                cairo_set_source_rgba(context, opt.summary_color.red, opt.summary_color.green, opt.summary_color.blue, opt.summary_color.alpha);
+                cairo_move_to(context, MessageArray[i].x + opt.margin, MessageArray[i].texty + opt.overline);
                 pango_cairo_show_layout(context, layout);
             }
         }
@@ -151,7 +143,7 @@ draw(Variables *opt)
                 break;
             case -1:
                 // Find out which notification was clicked.
-                notification_no = get_notification(eventpos, opt->height+opt->gap, opt->max);
+                notification_no = get_notification(eventpos, opt.height+opt.gap, opt.max_notifications);
 
                 // Delete and move below notifications up, if there are any.
                 if (in_queue(queuespec) != 1) {
@@ -181,7 +173,7 @@ draw(Variables *opt)
     pango_cairo_font_map_set_default(NULL);
     cairo_destroy(context);
 
-    var_destroy(opt);
+    //var_destroy(opt.;
 
     destroy(surface);
 }

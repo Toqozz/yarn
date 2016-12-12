@@ -11,28 +11,30 @@ gap = 7;
 notification:
 {
     // Dimensions in the format of wxh+x+y:
-    geometry = "300x30+30+40";
+    geometry = "300x23+1930+10";
 
     // Colors in #AARRGGBB format;
-    summary_color = "FFFFFFFF";
-    body_color    = "FFFFFFFF";
-    bgcolor = "FF000000";
-    fgcolor = "FFFFFFFF";
-    bdcolor = "FFFFFFFF";
+    summary_color = "#FFebdbb2";
+    body_color    = "#FFebdbb2";
+    bgcolor = "#FF282828";
+    bdcolor = "#FFebdbb2";
+
+    // Font.
+    font = "GohuFont 11";
 
     // Interval between refreshes (in ms).  Lower values mean smoother animation but more work.
     // 16.5 = 60fps
     // 33   = 30fps
-    interval = 33;
+    interval = 33.0;
 
     // Default time for notifications to be shown for:
-    timeout = 7;
+    timeout = 10.0;
+
+    // Rounding around the edges of a notification. (higehr number means more rounding).
+    rounding = 0.0;
 
     // Speed at which text scrolls across the screen. (pixels per second?)
     scroll_speed = 5;
-
-    // Font.
-    font = "GohuFont 11";
 
     // Margin.
     margin = 2;
@@ -43,8 +45,12 @@ notification:
     // Border thickness.
     bw = 3;
 
-    // Rounding around the edges of a notification. (higehr number means more rounding).
-    rounding = 0;
+
+    // Markup for the summary.
+    // "<b> %s <b>"
+
+    // Markup for the body.
+    // "<b> %b <b>"
 }
 
 // Hotkeys -- do stuff.
@@ -73,3 +79,9 @@ shortcuts:
     // Try to find a url in the notification and open it in the default browser:
     notification_url = -3;
 }
+
+// For compton:
+//shadow-exclude = ["n:e:yarn" ];
+//shadow-exclude = ["i:a:<other thing>", "n:e:yarn" ];
+
+// vim: syn=cfg

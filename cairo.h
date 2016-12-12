@@ -11,12 +11,15 @@ struct Wrapper {
 };
 
 void
-rounded_rectangle (double x, double y,
+rounded_rectangle (cairo_t *context,
+                  double x, double y,
                   double width, double height,
                   double aspect, double corner_radius,
-                  cairo_t *context,
                   double r, double g,
                   double b, double a);
+
+void
+draw_panel(cairo_t *context, Color bd, Color bg, int x, int y, int w, int h, int bw);
 
 int
 ease (int animation, int index, int curtime, double s, double e, double d);

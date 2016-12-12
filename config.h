@@ -1,10 +1,11 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
 
+#include <libconfig.h>
 #include "datatypes.h"
 
-int parse_config(char *file, Config *c);
+int read_config(config_t cfg, char *file, Config *c);
 
-int parse_convert(Config *c, Variables *v);
+int parse_config(Config *c);
 
 #endif

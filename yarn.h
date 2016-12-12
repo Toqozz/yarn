@@ -4,10 +4,7 @@
 #include "datatypes.h"
 
 Variables
-*var_create(char *font,
-            int margin, int max, int gap, int overline,
-            int bw, char* bc, int rounding, int timeout, int xpos, int ypos,
-            int width, int height);
+*var_create(void);
 
 Config
 *cfg_create(void);

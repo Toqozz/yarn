@@ -29,6 +29,7 @@ parse(const char *wxh, int *xpos, int *ypos, int *width, int *height)
     x = strsep(&dupe, "+");         // x = "20", dupe = "30"
     y = strsep(&dupe, "+");         // y = "30", dupe = ""
 
+    //printf("%s, %s, %s, %s\n", w, h, x, y);
     // Change variables 'globally' in memory. (*width and *height have memory addresses from main.).
     *xpos = strtol(x, NULL, 10);   // change value xpos is pointing to to something else.
     *ypos = strtol(y, NULL, 10);
@@ -60,24 +61,20 @@ get_notification (int ypos, int height, int max_notifications)
 Color
 hex_to_rgba(const char *hex_color)
 {
-    int a, r, g, b;
+    double a, r, g, b;
 
     // First turn string into hex.
     int hex;
     sscanf(hex_color, "#%x", &hex);
+    //printf("hex: %x\n", hex);
 
     // Move bits around and take out specific parts.
-    //a = ((hex >> 24) & 0xff) / 255.0;
-    //r = ((hex >> 16) & 0xff) / 255.0;
-    //g = ((hex >> 8) & 0xff) / 255.0;
-    //b = (hex & 0xff) / 255.0;
+    a = ((hex >> 24) & 0xff) / 255.0;
+    r = ((hex >> 16) & 0xff) / 255.0;
+    g = ((hex >> 8) & 0xff) / 255.0;
+    b = (hex & 0xff) / 255.0;
 
-    a = ((hex >> 24) & 0xff);
-    r = ((hex >> 16) & 0xff);
-    g = ((hex >> 8) & 0xff);
-    b = (hex & 0xff);
-
-    printf("a: %x-%d\nr: %x-%d\ng: %x-%d\nb: %x-%d\n", a, a, r, r, g, g, b, b);
+    //printf("a: %x-%f\nr: %x-%f\ng: %x-%f\nb: %x-%f\n", a, a, r, r, g, g, b, b);
 
     Color rgba = {r, g, b, a};
 

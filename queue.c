@@ -6,6 +6,8 @@
 
 extern Message MessageArray[QUEUESIZE];
 
+// TODO, use address instead of returning queue..
+
 Queue
 queue_insert(Queue queuespec, Message message)
 {

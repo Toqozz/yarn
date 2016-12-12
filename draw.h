@@ -11,7 +11,7 @@ void
 check_fuses(void);
 
 void
-draw(Variables *info);
+draw(void);
 
 void
 destroy(cairo_surface_t *sfc);

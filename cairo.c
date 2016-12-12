@@ -11,10 +11,10 @@
 #include "datatypes.h"
 
 // Modified from http://cairographics.org/samples/rounded_rectangle/
-void rounded_rectangle(double x, double y,
+void rounded_rectangle(cairo_t *context,
+                       double x, double y,
                        double width, double height,
                        double aspect, double corner_radius,
-                       cairo_t *context,
                        double r, double g,
                        double b, double a)
 {
@@ -29,6 +29,17 @@ void rounded_rectangle(double x, double y,
     cairo_close_path(context);
 
     cairo_set_source_rgba(context, r, g, b, a);
+    cairo_fill(context);
+}
+
+void draw_panel(cairo_t *context, Color bd, Color bg, int x, int y, int w, int h, int bw)
+{
+    cairo_set_source_rgba(context, bd.red, bd.green, bd.blue ,bd.alpha);
+    cairo_rectangle (context, x, y, w, h);
+    cairo_fill(context);
+
+    cairo_set_source_rgba(context, bg.red, bg.blue, bg.green, bg.alpha);
+    cairo_rectangle (context, x + bw, y + bw, w - bw*2, h - bw*2);
     cairo_fill(context);
 }
 
