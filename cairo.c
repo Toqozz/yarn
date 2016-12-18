@@ -35,12 +35,23 @@ void rounded_rectangle(cairo_t *context,
 void draw_panel(cairo_t *context, Color bd, Color bg, int x, int y, int w, int h, int bw)
 {
     cairo_set_source_rgba(context, bd.red, bd.green, bd.blue ,bd.alpha);
-    cairo_rectangle (context, x, y, w, h);
+    cairo_rectangle(context, x, y, w, h);
     cairo_fill(context);
 
     cairo_set_source_rgba(context, bg.red, bg.blue, bg.green, bg.alpha);
-    cairo_rectangle (context, x + bw, y + bw, w - bw*2, h - bw*2);
+    cairo_rectangle(context, x + bw, y + bw, w - bw*2, h - bw*2);
+    cairo_fill_preserve(context);
+    //cairo_clip(context);
+}
+
+void draw_panel_shadow(cairo_t *context, Color c, int x, int y, int w, int h)
+{
+    //cairo_set_operator(context, CAIRO_OPERATOR_OVER);
+    cairo_set_source_rgba(context, c.red, c.green, c.blue, c.alpha);
+    //for (int i = 4; i > 0; i--) {
+    cairo_rectangle(context, x, y, w, h);
     cairo_fill(context);
+    //}
 }
 
 // Ease the transition between two numbers -> ""animation""

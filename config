@@ -11,7 +11,7 @@ gap = 7;
 notification:
 {
     // Dimensions in the format of wxh+x+y:
-    geometry = "300x23+1930+10";
+    geometry = "300x23+1928+7";
 
     // Colors in #AARRGGBB format;
     summary_color = "#FFebdbb2";
@@ -40,7 +40,7 @@ notification:
     margin = 2;
 
     // Upper margin.
-    overline = 3;
+    overline = 4;
 
     // Border thickness.
     bw = 3;
@@ -83,5 +83,6 @@ shortcuts:
 // For compton:
 //shadow-exclude = ["n:e:yarn" ];
 //shadow-exclude = ["i:a:<other thing>", "n:e:yarn" ];
+//https://developer.gnome.org/pango/stable/PangoMarkupFormat.html  ---- markup.
 
 // vim: syn=cfg

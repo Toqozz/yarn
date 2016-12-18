@@ -1,4 +1,6 @@
 #include <libconfig.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "datatypes.h"
 #include "dbus.h"
@@ -12,6 +14,12 @@ Variables opt;
 int
 main (int argc, char *argv[])
 {
+    const char *home = getenv("HOME");
+    char config_path[100];
+
+    sprintf(config_path, "%s/.config/yarn/config", home);
+    printf("%s\n", config_path);
+
     config_t cfg;
     config_init(&cfg);
 

@@ -21,6 +21,9 @@ rounded_rectangle (cairo_t *context,
 void
 draw_panel(cairo_t *context, Color bd, Color bg, int x, int y, int w, int h, int bw);
 
+void
+draw_panel_shadow(cairo_t *context, Color c, int x, int y, int w, int h);
+
 int
 ease (int animation, int index, int curtime, double s, double e, double d);
 

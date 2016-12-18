@@ -71,9 +71,9 @@ draw(void)
     PangoFontDescription *desc;
 
     // Surface for drawing on, layout for putting the font on.
-    surface = cairo_create_x11_surface(opt.xpos, opt.ypos, opt.width, (opt.height + opt.gap) * opt.max_notifications);
+    surface = cairo_create_x11_surface(opt.xpos, opt.ypos, opt.width+10, (opt.height + opt.gap) * opt.max_notifications);
     context = cairo_create(surface);
-    layout = pango_cairo_create_layout (context);
+    layout = pango_cairo_create_layout(context);
 
     // Font selection with pango.
     desc = pango_font_description_from_string(opt.font);
@@ -83,6 +83,7 @@ draw(void)
     int running;
     int timepassed = 0, eventpos = 0;
 
+    Color col = {0,0,0,0.3};
     // TODO, opt.mize this for timings.
     // TODO, shadows...
     for (running = 1; running == 1; timepassed++)
@@ -98,7 +99,12 @@ draw(void)
             {
                 MessageArray[i].textx++;
 
+                draw_panel_shadow(context, col, MessageArray[i].x+5, MessageArray[i].y+5, opt.width, opt.height);
                 draw_panel(context, opt.bdcolor, opt.bgcolor, MessageArray[i].x, MessageArray[i].y, opt.width, opt.height, opt.bw);
+
+                // Make sure that we dont draw out of the box after this point.
+                cairo_save(context);
+                cairo_clip(context);
 
                 // Pixel extents are much better for this purpose.
                 pango_layout_set_markup(layout, MessageArray[i].summary, -1);
@@ -122,8 +128,11 @@ draw(void)
                 // Set and push summary to the source.
                 pango_layout_set_markup(layout, MessageArray[i].summary, -1);
                 cairo_set_source_rgba(context, opt.summary_color.red, opt.summary_color.green, opt.summary_color.blue, opt.summary_color.alpha);
-                cairo_move_to(context, MessageArray[i].x + opt.margin, MessageArray[i].texty + opt.overline);
+                cairo_move_to(context, MessageArray[i].x + opt.margin + opt.bw, MessageArray[i].texty + opt.overline);
                 pango_cairo_show_layout(context, layout);
+
+                // We can draw outside next time.
+                cairo_restore(context);
             }
         }
 
@@ -161,11 +170,13 @@ draw(void)
 
         // If the queue is empty, kill this thread basically.
         if (in_queue(queuespec) == 0) {
+            //exit(0);
             running = 0;
         }
 
         // Finally sleep ("animation").
         nanosleep(&req, &req);
+        //printf("%d\n", timepassed);
     }
 
     // Destroy once done.
