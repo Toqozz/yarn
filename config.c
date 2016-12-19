@@ -89,21 +89,16 @@ int read_config(config_t cfg, char *file, Config *c)
 
 int parse_config(Config *c)
 {
-    //char *bc = "ebdbb2";
-
-    printf("font: %s\n", c->font);
+    // TODO, check these options first before applying.
     opt.max_notifications = c->max_notifications;
     opt.gap = c->gap;
 
-    printf("geo: %s\n", c->geometry);
     parse(c->geometry, &opt.xpos, &opt.ypos, &opt.width, &opt.height);
 
     opt.summary_color = hex_to_rgba(c->summary_color);
     opt.body_color = hex_to_rgba(c->body_color);
     opt.bgcolor = hex_to_rgba(c->bgcolor);
     opt.bdcolor = hex_to_rgba(c->bdcolor);
-
-    printf("opt.summary_color: %f\n", opt.summary_color);
 
     opt.font = c->font;
 
