@@ -21,6 +21,6 @@ CFLAGS=-Wall -g -pthread
 all:	dbus
 
 dbus:
-	$(CC) $(BEFORE)	main.c dbus.c parse.c config.c x.c cairo.c draw.c queue.c yarn.c 	$(AFTER) -o dbus
+	$(CC) $(BEFORE)	main.c dbus.c parse.c config.c x.c cairo.c draw.c queue.c yarn.c 	$(AFTER) -o yarn
 clean:
-	rm -f dbus
+	rm -f yarn

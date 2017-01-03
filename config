@@ -13,9 +13,15 @@ notification:
     // Dimensions in the format of wxh+x+y:
     geometry = "300x23+1928+7";
 
+    // Shadow offsets.  (use negative values if you want)
+    shadow = 1;
+    shadow_xoffset = 5;
+    shadow_yoffset = 5;
+
     // Colors in #AARRGGBB format;
     summary_color = "#FFebdbb2";
     body_color    = "#FFebdbb2";
+    shadow_color  = "#4C000000";
     bgcolor = "#FF282828";
     bdcolor = "#FFebdbb2";
 
@@ -44,7 +50,6 @@ notification:
 
     // Border thickness.
     bw = 3;
-
 
     // Markup for the summary.
     // "<b> %s <b>"

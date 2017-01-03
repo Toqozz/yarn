@@ -28,8 +28,13 @@ typedef struct Config {
 
     const char *geometry;
 
+    int shadow;
+    int shadow_xoffset;
+    int shadow_yoffset;
+
     const char *summary_color;
     const char *body_color;
+    const char *shadow_color;
     const char *bgcolor;
     const char *bdcolor;
 
@@ -65,8 +70,13 @@ typedef struct Variables {
     int   width;
     int   height;
 
+    int   shadow;
+    int   shadow_xoffset;
+    int   shadow_yoffset;
+
     Color summary_color;
     Color body_color;
+    Color shadow_color;
     Color bgcolor;
     Color bdcolor;
 

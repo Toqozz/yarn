@@ -66,7 +66,6 @@ hex_to_rgba(const char *hex_color)
     // First turn string into hex.
     int hex;
     sscanf(hex_color, "#%x", &hex);
-    //printf("hex: %x\n", hex);
 
     // Move bits around and take out specific parts.
     a = ((hex >> 24) & 0xff) / 255.0;

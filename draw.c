@@ -16,10 +16,10 @@
 
 #include "draw.h"
 #include "datatypes.h"
+#include "cairo.h"
 #include "x.h"
 #include "parse.h"
 #include "queue.h"
-#include "cairo.h"
 
 // Interval = 33 = 30fps.
 #define INTERVAL 33
@@ -71,7 +71,10 @@ draw(void)
     PangoFontDescription *desc;
 
     // Surface for drawing on, layout for putting the font on.
-    surface = cairo_create_x11_surface(opt.xpos, opt.ypos, opt.width+10, (opt.height + opt.gap) * opt.max_notifications);
+    // TODO: different when the shadow offset is negative.
+    int width = opt.width + opt.shadow_xoffset;
+    int height = ((opt.height * opt.max_notifications) + (opt.gap * (opt.max_notifications - 1)) + opt.shadow_yoffset);
+    surface = cairo_create_x11_surface(opt.xpos, opt.ypos, width, height);
     context = cairo_create(surface);
     layout = pango_cairo_create_layout(context);
 
@@ -83,9 +86,6 @@ draw(void)
     int running;
     int timepassed = 0, eventpos = 0;
 
-    Color col = {0,0,0,0.3};
-    // TODO, opt.mize this for timings.
-    // TODO, shadows...
     for (running = 1; running == 1; timepassed++)
     {
         //printf("timepassed: %d\n", timepassed);
@@ -99,7 +99,10 @@ draw(void)
             {
                 MessageArray[i].textx++;
 
-                draw_panel_shadow(context, col, MessageArray[i].x+5, MessageArray[i].y+5, opt.width, opt.height);
+                draw_panel_shadow(context, opt.shadow_color,
+                        MessageArray[i].x + opt.shadow_xoffset,
+                        MessageArray[i].y + opt.shadow_yoffset,
+                        opt.width, opt.height);
                 draw_panel(context, opt.bdcolor, opt.bgcolor, MessageArray[i].x, MessageArray[i].y, opt.width, opt.height, opt.bw);
 
                 // Make sure that we dont draw out of the box after this point.
@@ -107,6 +110,8 @@ draw(void)
                 cairo_clip(context);
 
                 // Pixel extents are much better for this purpose.
+                // TODO: could move this out of the loop?
+                // TODO: maybe assign extents to each message? ..
                 pango_layout_set_markup(layout, MessageArray[i].summary, -1);
                 pango_layout_get_pixel_extents(layout, &sextents, NULL);
                 pango_layout_set_markup(layout, MessageArray[i].body, -1);
@@ -121,7 +126,7 @@ draw(void)
                 cairo_set_source_rgba(context, opt.bgcolor.red, opt.bgcolor.green, opt.bgcolor.blue, opt.bgcolor.alpha);
                 cairo_rectangle(context, MessageArray[i].x + opt.bw,
                                          MessageArray[i].y + opt.bw,
-                                         opt.margin + sextents.width,
+                                         opt.margin + sextents.width + opt.margin,
                                          opt.height - opt.bw*2);
                 cairo_fill(context);
 

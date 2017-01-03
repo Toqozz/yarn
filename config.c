@@ -14,7 +14,8 @@ int read_config(config_t cfg, char *file, Config *c)
     config_setting_t *setting;
 
     /* Read the file. If there is an error, report it and exit. */
-    if (!config_read_file(&cfg, file))
+    //if (!config_read_file(&cfg, file))
+    if (!config_read_file(&cfg, "config"))
     {
         fprintf(stderr, "%s:%d - %s\n", config_error_file(&cfg), config_error_line(&cfg), config_error_text(&cfg));
         config_destroy(&cfg);
@@ -34,8 +35,13 @@ int read_config(config_t cfg, char *file, Config *c)
     {
         config_setting_lookup_string(setting, "geometry", &c->geometry);
 
+        config_setting_lookup_int(setting, "shadow", &c->shadow);
+        config_setting_lookup_int(setting, "shadow_xoffset", &c->shadow_xoffset);
+        config_setting_lookup_int(setting, "shadow_yoffset", &c->shadow_yoffset);
+
         config_setting_lookup_string(setting, "summary_color", &c->summary_color);
         config_setting_lookup_string(setting, "body_color", &c->body_color);
+        config_setting_lookup_string(setting, "shadow_color", &c->shadow_color);
         config_setting_lookup_string(setting, "bgcolor", &c->bgcolor);
         config_setting_lookup_string(setting, "bdcolor", &c->bdcolor);
 
@@ -95,8 +101,13 @@ int parse_config(Config *c)
 
     parse(c->geometry, &opt.xpos, &opt.ypos, &opt.width, &opt.height);
 
+    opt.shadow = c->shadow;
+    opt.shadow_xoffset = c->shadow_xoffset;
+    opt.shadow_yoffset = c->shadow_yoffset;
+
     opt.summary_color = hex_to_rgba(c->summary_color);
     opt.body_color = hex_to_rgba(c->body_color);
+    opt.shadow_color = hex_to_rgba(c->shadow_color);
     opt.bgcolor = hex_to_rgba(c->bgcolor);
     opt.bdcolor = hex_to_rgba(c->bdcolor);
 
