@@ -18,6 +18,10 @@ notification:
     shadow_xoffset = 5;
     shadow_yoffset = 5;
 
+    // Max summary length (in pixels).  Summary will be elipsed if it is longer than this.
+    summary_width = 70;
+    body_width = 250;
+
     // Colors in #AARRGGBB format;
     summary_color = "#FFebdbb2";
     body_color    = "#FFebdbb2";
@@ -27,6 +31,12 @@ notification:
 
     // Font.
     font = "GohuFont 11";
+
+    // Markup for the summary.
+    summary_markup = "<b> %s </b>"
+
+    // Markup for the body.
+    body_markup = "<i> %s </i>"
 
     // Interval between refreshes (in ms).  Lower values mean smoother animation but more work.
     // 16.5 = 60fps
@@ -50,12 +60,6 @@ notification:
 
     // Border thickness.
     bw = 3;
-
-    // Markup for the summary.
-    // "<b> %s <b>"
-
-    // Markup for the body.
-    // "<b> %b <b>"
 }
 
 // Hotkeys -- do stuff.

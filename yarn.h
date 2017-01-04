@@ -6,9 +6,6 @@
 Variables
 *var_create(void);
 
-Config
-*cfg_create(void);
-
 Message
 message_create(char *summary, char *body, int textx, int texty, int x, int y, double fuse);
 

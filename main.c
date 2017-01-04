@@ -4,10 +4,11 @@
 
 #include "datatypes.h"
 #include "dbus.h"
-#include "config.h"
+#include "cfg.h"
 #include "yarn.h"
 #include "parse.h"
 #include "stdio.h"
+#include "utils.h"
 
 Variables opt;
 
@@ -26,11 +27,11 @@ main (int argc, char *argv[])
 
     // Read config in from file.
     Config *c = cfg_create();
-    read_config(cfg, config_path, c);
+    cfg_read(cfg, config_path, c);
 
     // Read config into stack (& convert), destroys "&cfg".
     // false^
-    parse_config(c);
+    cfg_assign(c);
 
     yarn_init();
 

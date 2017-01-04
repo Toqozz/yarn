@@ -11,7 +11,7 @@
 #include "draw.h"
 #include "queue.h"
 #include "cairo.h"
-#include "config.h"
+#include "cfg.h"
 
 // pthread types.
 pthread_t split_notification;
@@ -32,25 +32,18 @@ Variables
     return v;
 }
 
-Config
-*cfg_create(void)
-{
-    Config *c = malloc(sizeof(Config));
-    assert(c != NULL);
-
-    return c;
-}
-
 // Create messages on the stack.
 Message
 message_create(char *summary, char *body, int textx, int texty, int x, int y, double fuse)
 {
     Message m;
 
-    m.summary = summary;
-    m.body = body;
+    m.summary = parse_prepare_text(summary);
+    m.body = parse_prepare_text(body);
+    m.swidth = 0;
+    m.bwidth = 0;
     m.textx = textx;
-    m.texty =texty;
+    m.texty = texty;
     m.x = x;
     m.y = y;
     m.visible = 1;
@@ -59,8 +52,8 @@ message_create(char *summary, char *body, int textx, int texty, int x, int y, do
     return m;
 }
 
-void
-*run(void *arg)
+void *
+run(void *arg)
 {
     Notification *n = (Notification*) arg;
 

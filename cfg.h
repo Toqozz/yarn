@@ -4,8 +4,11 @@
 #include <libconfig.h>
 #include "datatypes.h"
 
-int read_config(config_t cfg, char *file, Config *c);
+Config
+*cfg_create(void);
 
-int parse_config(Config *c);
+int cfg_read(config_t cfg, char *file, Config *c);
+
+int cfg_assign(Config *c);
 
 #endif

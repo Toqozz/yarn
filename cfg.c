@@ -1,21 +1,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <libconfig.h>
+#include <assert.h>
 
-#include "config.h"
+#include "cfg.h"
 #include "datatypes.h"
 #include "parse.h"
 
 // Settings...
 extern Variables opt;
 
-int read_config(config_t cfg, char *file, Config *c)
+Config
+*cfg_create(void)
+{
+    Config *c = malloc(sizeof(Config));
+    assert(c != NULL);
+
+    return c;
+}
+
+int
+cfg_read(config_t cfg, char *file, Config *c)
 {
     config_setting_t *setting;
 
     /* Read the file. If there is an error, report it and exit. */
+    if (!config_read_file(&cfg, "config"))
     //if (!config_read_file(&cfg, file))
-    if (!config_read_file(&cfg, file))
     {
         fprintf(stderr, "%s:%d - %s\n", config_error_file(&cfg), config_error_line(&cfg), config_error_text(&cfg));
         config_destroy(&cfg);
@@ -39,6 +50,8 @@ int read_config(config_t cfg, char *file, Config *c)
         config_setting_lookup_int(setting, "shadow_xoffset", &c->shadow_xoffset);
         config_setting_lookup_int(setting, "shadow_yoffset", &c->shadow_yoffset);
 
+        config_setting_lookup_int(setting, "summary_width", &c->summary_width);
+
         config_setting_lookup_string(setting, "summary_color", &c->summary_color);
         config_setting_lookup_string(setting, "body_color", &c->body_color);
         config_setting_lookup_string(setting, "shadow_color", &c->shadow_color);
@@ -46,6 +59,8 @@ int read_config(config_t cfg, char *file, Config *c)
         config_setting_lookup_string(setting, "bdcolor", &c->bdcolor);
 
         config_setting_lookup_string(setting, "font", &c->font);
+        config_setting_lookup_string(setting, "summary_markup", &c->summary_markup);
+        config_setting_lookup_string(setting, "summary_markup", &c->summary_markup);
 
         config_setting_lookup_float(setting, "interval", &c->interval);
         config_setting_lookup_float(setting, "rounding", &c->rounding);
@@ -93,23 +108,26 @@ int read_config(config_t cfg, char *file, Config *c)
     return(EXIT_SUCCESS);
 }
 
-int parse_config(Config *c)
+int
+cfg_assign(Config *c)
 {
     // TODO, check these options first before applying.
     opt.max_notifications = c->max_notifications;
     opt.gap = c->gap;
 
-    parse(c->geometry, &opt.xpos, &opt.ypos, &opt.width, &opt.height);
+    parse_geometry(c->geometry, &opt.xpos, &opt.ypos, &opt.width, &opt.height);
 
     opt.shadow = c->shadow;
     opt.shadow_xoffset = c->shadow_xoffset;
     opt.shadow_yoffset = c->shadow_yoffset;
 
-    opt.summary_color = hex_to_rgba(c->summary_color);
-    opt.body_color = hex_to_rgba(c->body_color);
-    opt.shadow_color = hex_to_rgba(c->shadow_color);
-    opt.bgcolor = hex_to_rgba(c->bgcolor);
-    opt.bdcolor = hex_to_rgba(c->bdcolor);
+    opt.summary_width = c->summary_width;
+
+    opt.summary_color = parse_hex_to_rgba(c->summary_color);
+    opt.body_color = parse_hex_to_rgba(c->body_color);
+    opt.shadow_color = parse_hex_to_rgba(c->shadow_color);
+    opt.bgcolor = parse_hex_to_rgba(c->bgcolor);
+    opt.bdcolor = parse_hex_to_rgba(c->bdcolor);
 
     opt.font = c->font;
 

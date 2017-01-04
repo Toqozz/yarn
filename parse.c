@@ -8,10 +8,12 @@
 #include <assert.h>
 
 #include "parse.h"
+#include "utils.h"
 #include "datatypes.h"
 
+/* Parse a geometry string into some numbers */
 void
-parse(const char *wxh, int *xpos, int *ypos, int *width, int *height)
+parse_geometry(const char *wxh, int *xpos, int *ypos, int *width, int *height)
 {
     char *x, *y, *w, *h;
 
@@ -41,9 +43,9 @@ parse(const char *wxh, int *xpos, int *ypos, int *width, int *height)
     free(dupe);
 }
 
-// Find out which notification was pressed given mouse y coordinate and windw height.
+/* Find out which notification was pressed given mouse y coordinate and windw height. */
 int
-get_notification (int ypos, int height, int max_notifications)
+parse_xy_to_notification(int ypos, int height, int max_notifications)
 {
     int notification = 0;
 
@@ -58,8 +60,9 @@ get_notification (int ypos, int height, int max_notifications)
     return notification-1;
 }
 
+/* Parse a hex string into an RGBA color struct (0-1 based) */
 Color
-hex_to_rgba(const char *hex_color)
+parse_hex_to_rgba(const char *hex_color)
 {
     double a, r, g, b;
 
@@ -79,4 +82,27 @@ hex_to_rgba(const char *hex_color)
 
     return rgba;
 }
+
+/* Prepare text for pango rendering */
+char *
+parse_prepare_text(const char *text)
+{
+    char *temp;
+
+    // TODO, we should later replace &lt; b &rt; with <b> or similar...?
+    // regex? or only allow certain things... or lose performance hmm..
+    printf("old string: %s\n", text);
+
+    temp = repl_str(text, "&", "&amp;");
+    temp = repl_str(temp, "'", "&apos;");
+    temp = repl_str(temp, "\"", "&quot;");
+    temp = repl_str(temp, "<", "&lt;");
+    temp = repl_str(temp, ">", "&gt;");
+
+    printf("new string: %s\n", temp);
+
+    return temp;
+}
+
+
 

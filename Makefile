@@ -18,9 +18,9 @@ AFTER=`pkg-config --libs dbus-glib-1` \
 	`pkg-config --libs libconfig` \
 	-lm
 CFLAGS=-Wall -g -pthread
-all:	dbus
+all:	yarn
 
-dbus:
-	$(CC) $(BEFORE)	main.c dbus.c parse.c config.c x.c cairo.c draw.c queue.c yarn.c 	$(AFTER) -o yarn
+yarn:
+	$(CC) $(BEFORE)	main.c dbus.c utils.c parse.c cfg.c x.c cairo.c draw.c queue.c yarn.c 	$(AFTER) -o yarn
 clean:
 	rm -f yarn

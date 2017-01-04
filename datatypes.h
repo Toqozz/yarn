@@ -32,6 +32,8 @@ typedef struct Config {
     int shadow_xoffset;
     int shadow_yoffset;
 
+    int summary_width;
+
     const char *summary_color;
     const char *body_color;
     const char *shadow_color;
@@ -39,6 +41,8 @@ typedef struct Config {
     const char *bdcolor;
 
     const char *font;
+    const char *summary_markup;
+    const char *body_markup;
 
     double interval;
     double timeout;
@@ -53,6 +57,8 @@ typedef struct Config {
 typedef struct Message {
     char *summary;
     char *body;
+    int   swidth;  // kind of ugly to discard the height... but why would we need it?
+    int   bwidth;  // checking..? maybe... or leave this up to the user.
     int   textx;
     int   texty;
     int   x;
@@ -73,6 +79,8 @@ typedef struct Variables {
     int   shadow;
     int   shadow_xoffset;
     int   shadow_yoffset;
+
+    int summary_width;
 
     Color summary_color;
     Color body_color;
