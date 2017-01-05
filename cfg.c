@@ -7,7 +7,6 @@
 #include "datatypes.h"
 #include "parse.h"
 
-// Settings...
 extern Variables opt;
 
 Config
@@ -19,9 +18,15 @@ Config
     return c;
 }
 
+/* Read a "physical" config file into a config struct */
 int
 cfg_read(config_t cfg, char *file, Config *c)
 {
+    /* Storage for the string returned by config_lookup_string() is managed by
+     * the library and released automatically when the setting is destroyed or
+     * when the setting's value is changed; the string must not be freed by
+     * the caller. */
+
     config_setting_t *setting;
 
     /* Read the file. If there is an error, report it and exit. */
@@ -102,12 +107,14 @@ cfg_read(config_t cfg, char *file, Config *c)
                 c->margin,
                 c->overline,
                 c->bw);
-                */
+        */
     }
 
     return(EXIT_SUCCESS);
 }
 
+/* Transfer from config struct to options struct.
+ * Also performs any conversion needed. */
 int
 cfg_assign(Config *c)
 {
@@ -140,7 +147,8 @@ cfg_assign(Config *c)
     opt.bw = c->bw;
     opt.rounding = c->rounding;
 
-    free(c);
+    // We do not need to free the strings in 'c', read above.
+    //free(c);
 
     return(EXIT_SUCCESS);
 }

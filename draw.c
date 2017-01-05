@@ -36,16 +36,6 @@ Queue queuespec = { 0, -1 };
 Message MessageArray[QUEUESIZE];
 extern Variables opt;
 
-// Free heap memory.
-/*
-void
-var_destroy(Variables *destroy)
-{
-    assert(destroy != NULL);
-    free(destroy);
-}
-*/
-
 // Check on each message's fuse and delete burnt ones from the queue.
 void
 check_fuses(void)
@@ -66,7 +56,6 @@ draw(void)
     cairo_surface_t *surface;
     cairo_t *context;
     PangoRectangle sextents;
-    //PangoRectangle bextents;
     PangoLayout *layout;
     PangoFontDescription *desc;
 
@@ -189,8 +178,6 @@ draw(void)
     g_object_unref(layout);
     pango_cairo_font_map_set_default(NULL);
     cairo_destroy(context);
-
-    //var_destroy(opt.;
 
     destroy(surface);
 }

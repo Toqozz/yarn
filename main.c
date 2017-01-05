@@ -29,11 +29,13 @@ main (int argc, char *argv[])
     Config *c = cfg_create();
     cfg_read(cfg, config_path, c);
 
-    // Read config into stack (& convert), destroys "&cfg".
-    // false^
+    // Read config into stack (& convert).
     cfg_assign(c);
 
+    // Start yarn.
     yarn_init();
 
+    // We're done, the config can finally be let go.
     config_destroy(&cfg);
+    free(c);
 }

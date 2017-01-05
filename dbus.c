@@ -217,14 +217,6 @@ onNotify(GDBusConnection *connection,
                                            summary,
                                            body,
                                            expire_timeout);
-    /*
-    n->app_name = app_name;
-    n->replaces_id = replaces_id;
-    n->app_icon = app_icon;
-    n->summary = summary;
-    n->body = body;
-    n->expire_timeout = expire_timeout;
-    */
 
     int id = 1;
     GVariant *reply = g_variant_new("(u)", id);

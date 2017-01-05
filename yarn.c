@@ -20,6 +20,7 @@ pthread_mutex_t stack_mutex = PTHREAD_MUTEX_INITIALIZER;
 extern Queue queuespec;
 extern Message MessageArray[QUEUESIZE];
 extern Variables opt;
+
 static bool THREAD_ALIVE = false;
 
 Variables
@@ -38,8 +39,14 @@ message_create(char *summary, char *body, int textx, int texty, int x, int y, do
 {
     Message m;
 
-    m.summary = parse_prepare_text(summary);
-    m.body = parse_prepare_text(body);
+    summary = parse_strip_markup(summary);
+    summary = parse_quote_markup(summary);
+
+    body = parse_strip_markup(body);
+    body = parse_quote_markup(body);
+
+    m.summary = summary;
+    m.body = body;
     m.swidth = 0;
     m.bwidth = 0;
     m.textx = textx;
@@ -57,8 +64,6 @@ run(void *arg)
 {
     Notification *n = (Notification*) arg;
 
-    //Variables *opt.= var_create();
-
     // string, text x, text y, x, y, fuse.
     Message message = message_create(n->summary,    // notify summary
                                      n->body,       // notify body
@@ -73,8 +78,9 @@ run(void *arg)
     draw();
 
     // Notification is freed when its done.
-    free(arg);
+    free(n);
 
+    // TODO, lowercase, its not a constant...
     THREAD_ALIVE = false;
 
     return NULL;
@@ -85,6 +91,7 @@ prepare(Notification *n)
 {
     if (THREAD_ALIVE == false) {
         pthread_create(&split_notification, NULL, run, n);
+        pthread_detach(split_notification);
         THREAD_ALIVE = true;
     } else {
         //Variables *opt.= var_initialize();

@@ -13,6 +13,9 @@ Color
 parse_hex_to_rgba(const char *hex_color);
 
 char *
-parse_prepare_text(const char *text);
+parse_strip_markup(const char *text);
+
+char *
+parse_quote_markup(const char *text);
 
 #endif

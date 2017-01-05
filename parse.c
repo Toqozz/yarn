@@ -83,26 +83,71 @@ parse_hex_to_rgba(const char *hex_color)
     return rgba;
 }
 
-/* Prepare text for pango rendering */
+/* Replace markup with real characters. */
 char *
-parse_prepare_text(const char *text)
+parse_strip_markup(const char *text)
 {
     char *temp;
 
     // TODO, we should later replace &lt; b &rt; with <b> or similar...?
     // regex? or only allow certain things... or lose performance hmm..
-    printf("old string: %s\n", text);
+    //printf("strip markup from: %s\n", text);
 
-    temp = repl_str(text, "&", "&amp;");
-    temp = repl_str(temp, "'", "&apos;");
-    temp = repl_str(temp, "\"", "&quot;");
-    temp = repl_str(temp, "<", "&lt;");
-    temp = repl_str(temp, ">", "&gt;");
+    temp = repl_str(text, "&amp;", "&");
+    temp = repl_str(temp, "&apos;", "'");
+    temp = repl_str(temp, "&quot;", "\"");
+    temp = repl_str(temp, "&lt;", "<");
+    temp = repl_str(temp, "&gt;", ">");
 
-    printf("new string: %s\n", temp);
+    //printf("new string: %s\n", temp);
 
     return temp;
 }
 
+/* Replace real cahracters with markup. */
+char *
+parse_quote_markup(const char *text)
+{
+    char *temp;
+
+    //printf("quote markup from: %s\n", text);
+
+    temp = repl_str(temp, "&", "&amp;");
+    temp = repl_str(temp, "'", "&apos;");
+    temp = repl_str(temp, "\"", "&quot;");
+
+    // Just these for now... can add more!
+    // We don't need this stuff, its a user convenience thing.
+    // Also, maybe hack the repl_str code to occlude these.
+    temp = repl_str(text, "<b>", "&bld;");
+    temp = repl_str(temp, "</b>", "&bldc;");
+    temp = repl_str(text, "<i>", "&it;");
+    temp = repl_str(temp, "</i>", "&itc;");
+    temp = repl_str(text, "<s>", "&st;");
+    temp = repl_str(temp, "</s>", "&stc;");
+    temp = repl_str(text, "<s>", "&st;");
+    temp = repl_str(temp, "</s>", "&stc;");
+    temp = repl_str(text, "<u>", "&und;");
+    temp = repl_str(temp, "</u>", "&undc;");
+
+    // These are annoying.
+    temp = repl_str(temp, "<", "&lt;");
+    temp = repl_str(temp, ">", "&gt;");
+
+    temp = repl_str(text, "&bld;", "<b>");
+    temp = repl_str(temp, "&bldc;", "</b>");
+    temp = repl_str(text, "&it;", "<i>");
+    temp = repl_str(temp, "&itc;", "</i>");
+    temp = repl_str(text, "&st;", "<s>");
+    temp = repl_str(temp, "&stc;", "</s>");
+    temp = repl_str(text, "&st;", "<s>");
+    temp = repl_str(temp, "&stc;", "</s>");
+    temp = repl_str(text, "&und;", "<u>");
+    temp = repl_str(temp, "&undc;", "</u>");
+
+    //printf("new string: %s\n", temp);
+
+    return temp;
+}
 
 

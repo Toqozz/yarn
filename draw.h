@@ -5,9 +5,6 @@
 #include "datatypes.h"
 
 void
-var_destroy(Variables *destroy);
-
-void
 check_fuses(void);
 
 void
