@@ -6,11 +6,11 @@
 #include <stdbool.h>
 #include "datatypes.h"
 
-Queue
-queue_insert(Queue queuespec, Message message);
+void
+queue_insert(Queue *queuespec, Message message);
 
-Queue
-queue_delete(Queue queuespec, int position);
+void
+queue_delete(Queue *queuespec, int position);
 
 void
 queue_align(Queue queuespec);

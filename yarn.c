@@ -72,7 +72,7 @@ run(void *arg)
                                      0,             // x
                                      0,             // y
                                      opt.timeout); // fuse
-    queuespec = queue_insert(queuespec, message);
+    queue_insert(&queuespec, message);
 
     // Draw...
     draw();
@@ -89,33 +89,40 @@ run(void *arg)
 void
 prepare(Notification *n)
 {
+    // If there aren't any notifications being shown, we need to create a new thread.
     if (THREAD_ALIVE == false) {
-        pthread_create(&split_notification, NULL, run, n);
-        pthread_detach(split_notification);
-        THREAD_ALIVE = true;
+        // 1 == true == error.
+        if (pthread_create(&split_notification, NULL, run, n)) {
+            perror("Could not create pthread");
+            return;
+        } else {
+            pthread_detach(split_notification);
+            THREAD_ALIVE = true;
+        }
     } else {
-        //Variables *opt.= var_initialize();
         if (queuespec.rear == opt.max_notifications) {
-            queuespec = queue_delete(queuespec, 0);
+            queue_delete(&queuespec, 0);
             queue_align(queuespec);
+            Message message = message_create(n->summary,
+                                             n->body,
+                                             0,
+                                             queuespec.rear * (opt.height + opt.gap),
+                                             0,
+                                             queuespec.rear * (opt.height + opt.gap),
+                                             opt.timeout);
 
-            // If there aren't any notifications being shown, we need to create a new thread.
-            queuespec = queue_insert(queuespec, message_create(n->summary,
-                                                               n->body,
-                                                               0,
-                                                               queuespec.rear * (opt.height + opt.gap),
-                                                               0,
-                                                               queuespec.rear * (opt.height + opt.gap),
-                                                               opt.timeout));
+            queue_insert(&queuespec, message);
         } else {
             // If there are notifications being shown, simply add the new notification to the queue.
-            queuespec = queue_insert(queuespec, message_create(n->summary,
-                                                               n->body,
-                                                               0,
-                                                               queuespec.rear * (opt.height + opt.gap),
-                                                               0,
-                                                               queuespec.rear * (opt.height + opt.gap),
-                                                               opt.timeout));
+            Message message = message_create(n->summary,
+                                             n->body,
+                                             0,
+                                             queuespec.rear * (opt.height + opt.gap),
+                                             0,
+                                             queuespec.rear * (opt.height + opt.gap),
+                                             opt.timeout);
+
+            queue_insert(&queuespec, message);
         }
     }
 }

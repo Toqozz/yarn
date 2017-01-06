@@ -5,58 +5,60 @@
 #include "queue.h"
 
 extern Message MessageArray[QUEUESIZE];
+extern Variables opt;
 
-// TODO, use address instead of returning queue..
 
-Queue
-queue_insert(Queue queuespec, Message message)
+/* Insert an item into the queue(s).
+ * The global queue actually comprises of 2 separate arrays, but they're
+ * pretty much tied to each other. */
+void
+queue_insert(Queue *queuespec, Message message)
 {
-    if (queuespec.rear == QUEUESIZE-1)
-        printf("Queue is full, skipped.\n");
+    if (queuespec->rear == QUEUESIZE-1)
+        fprintf(stderr, "Queue is full, skipped.\n");
     else
     {
         // If queue is initially empty.
-        if (queuespec.front == -1)
-            queuespec.front = 0;
+        if (queuespec->front == -1)
+            queuespec->front = 0;
 
         // Add item to array.
         // There is a new item, the end is pushed back.
-        MessageArray[queuespec.rear++] = message;
+        MessageArray[queuespec->rear++] = message;
     }
-
-    return queuespec;
 }
 
-Queue
-queue_delete(Queue queuespec, int position)
+/* Delete an item from the queue. */
+void
+queue_delete(Queue *queuespec, int position)
 {
     int i = 0;
 
     // Nothing in queue.
-    if (queuespec.front == - 1)
-        printf("Queue is empty -- nothing to delete.\n");
+    if (queuespec->front == - 1)
+        fprintf(stderr, "Queue is empty -- nothing to delete.\n");
 
     // Move each item down one.
-    else
-    {
-        for (i = position; i < queuespec.rear-1; i++)
+    else {
+        for (i = position; i < queuespec->rear-1; i++)
             MessageArray[i] = MessageArray[i+1];
-        queuespec.rear--;
+        queuespec->rear--;
     }
-
-    return queuespec;
 }
 
+/* Align message coordinates to match up with the queue.
+ * Could actually add this to the loop in queue_delete(), but
+ * I don't think that it would really be that beneficial. */
 void
-queue_align (Queue queuespec) {
-    // TODO use actual measurements.
-    // TODO, put notification size somewhere globally accessible.
+queue_align (Queue queuespec)
+{
     for (int i = 0; i < queuespec.rear; i++) {
-        MessageArray[i].y = i * 30;
-        MessageArray[i].texty = i * 30;
+        MessageArray[i].y = i * (opt.height + opt.gap);
+        MessageArray[i].texty = i * (opt.height + opt.gap);
     }
 }
 
+/* Simply return the amount of items in the queue. */
 int
 in_queue(Queue queuespec)
 {

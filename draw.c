@@ -45,7 +45,7 @@ check_fuses(void)
         //printf("Fuse: %Lf, Taking away: %f\n", MessageArray[i].fuse, (double) INTERVAL/1000);
         MessageArray[i].fuse = MessageArray[i].fuse - (double)INTERVAL/1000;
         if (MessageArray[i].fuse <= 0)
-            queuespec = queue_delete(queuespec, i);
+            queue_delete(&queuespec, i);
             queue_align(queuespec);
     }
 }
@@ -151,10 +151,10 @@ draw(void)
 
                 // Delete and move below notifications up, if there are any.
                 if (in_queue(queuespec) != 1) {
-                    queuespec = queue_delete(queuespec, notification_no);
+                    queue_delete(&queuespec, notification_no);
                     queue_align(queuespec);
                 } else {
-                    queuespec = queue_delete(queuespec, notification_no);
+                    queue_delete(&queuespec, notification_no);
                 }
 
                 break;
