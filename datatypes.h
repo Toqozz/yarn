@@ -15,9 +15,9 @@ typedef struct Queue {
 
 typedef struct Notification {
     char *app_name;
+    char *app_icon;
     char *summary;
     char *body;
-    char *app_icon;
     int   replaces_id;
     int   expire_timeout;
 } Notification;

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include "datatypes.h"
 #include "queue.h"
@@ -39,7 +40,11 @@ queue_delete(Queue *queuespec, int position)
         fprintf(stderr, "Queue is empty -- nothing to delete.\n");
 
     // Move each item down one.
+    // Is there a leak?  Even though the rear is decreased it does not remove the message on the end really.
+    // No, because pointers are singular -> they don't get 'copied'.
     else {
+        free(MessageArray[position].summary);
+        free(MessageArray[position].body);
         for (i = position; i < queuespec->rear-1; i++)
             MessageArray[i] = MessageArray[i+1];
         queuespec->rear--;

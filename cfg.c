@@ -30,8 +30,8 @@ cfg_read(config_t cfg, char *file, Config *c)
     config_setting_t *setting;
 
     /* Read the file. If there is an error, report it and exit. */
-    if (!config_read_file(&cfg, "config"))
-    //if (!config_read_file(&cfg, file))
+    //if (!config_read_file(&cfg, "config"))
+    if (!config_read_file(&cfg, file))
     {
         fprintf(stderr, "%s:%d - %s\n", config_error_file(&cfg), config_error_line(&cfg), config_error_text(&cfg));
         config_destroy(&cfg);

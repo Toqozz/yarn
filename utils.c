@@ -10,7 +10,8 @@
 
 #include "utils.h"
 
-char *repl_str(const char *str, const char *from, const char *to)
+char *
+repl_str(const char *str, const char *from, const char *to)
 {
     /* Adjust each of the below values to suit your needs. */
 

@@ -7,7 +7,7 @@ Variables
 *var_create(void);
 
 Message
-message_create(char *summary, char *body, int textx, int texty, int x, int y, double fuse);
+message_create(Notification *n, int textx, int texty, int x, int y, double fuse);
 
 Variables
 *var_initialize(void);

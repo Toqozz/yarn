@@ -12,28 +12,6 @@
 
 // mainly from dunst, demistifyed a lot of dbus in c for me.
 
-// make a notification struct (allocate memory, etc)
-Notification *notification_create(char *app_name,
-                                  int  replaces_id,
-                                  char *app_icon,
-                                  char *summary,
-                                  char *body,
-                                  int  expire_timeout)
-{
-    Notification *n = malloc(sizeof(Notification));
-    assert (n != NULL);
-
-    n->app_name = app_name;
-    n->replaces_id = replaces_id;
-    n->app_icon = app_icon;
-    n->summary = summary;
-    n->body = body;
-    n->expire_timeout = expire_timeout;
-    //printf("1.\n");
-
-    return n;
-}
-
 // in dunst, used for emiting the NotificationClosed signal later.
 GDBusConnection *conn;
 
@@ -211,12 +189,15 @@ onNotify(GDBusConnection *connection,
     g_variant_iter_free(iter);
     }
 
-    Notification *n = notification_create (app_name,
-                                           replaces_id,
-                                           app_icon,
-                                           summary,
-                                           body,
-                                           expire_timeout);
+    Notification *n = malloc(sizeof(Notification));
+    assert (n != NULL);
+
+    n->app_name = app_name;
+    n->replaces_id = replaces_id;
+    n->app_icon = app_icon;
+    n->summary = summary;
+    n->body = body;
+    n->expire_timeout = expire_timeout;
 
     int id = 1;
     GVariant *reply = g_variant_new("(u)", id);
