@@ -1,6 +1,7 @@
 #include <libconfig.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <pthread.h>
 
 #include "datatypes.h"
 #include "dbus.h"
@@ -38,4 +39,6 @@ main (int argc, char *argv[])
     // We're done, the config can finally be let go.
     config_destroy(&cfg);
     free(c);
+
+    return 0;
 }

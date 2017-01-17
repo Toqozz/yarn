@@ -60,6 +60,7 @@ cairo_create_x11_surface(int x, int y, int w, int h)
     screen = DefaultScreen(display);   // Use primary display.
     XVisualInfo vinfo;
     // Match the display settings.
+    // TODO, default depth instead of guess?
     XMatchVisualInfo(display, screen, 32, TrueColor, &vinfo);
 
     XSetWindowAttributes attr;
@@ -80,6 +81,8 @@ cairo_create_x11_surface(int x, int y, int w, int h)
     // Request that the X server report these events.
     x_set_wm(drawable, display);
     XSelectInput(display, drawable, ExposureMask | ButtonPressMask | KeyPressMask);
+
+    // Show window on screen.
     XMapWindow(display, drawable);
 
     // Finally create a surface from the window.
@@ -144,8 +147,10 @@ void
 destroy(cairo_surface_t *sfc)
 {
     Display *dsp = cairo_xlib_surface_get_display(sfc);
+    Drawable draw = cairo_xlib_surface_get_drawable(sfc);
 
     cairo_surface_destroy(sfc);
     cairo_debug_reset_static_data();
+    XDestroyWindow(dsp, draw);
     XCloseDisplay(dsp);
 }

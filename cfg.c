@@ -56,6 +56,7 @@ cfg_read(config_t cfg, char *file, Config *c)
         config_setting_lookup_int(setting, "shadow_yoffset", &c->shadow_yoffset);
 
         config_setting_lookup_int(setting, "summary_width", &c->summary_width);
+        config_setting_lookup_int(setting, "body_width", &c->body_width);
 
         config_setting_lookup_string(setting, "summary_color", &c->summary_color);
         config_setting_lookup_string(setting, "body_color", &c->body_color);
@@ -129,6 +130,7 @@ cfg_assign(Config *c)
     opt.shadow_yoffset = c->shadow_yoffset;
 
     opt.summary_width = c->summary_width;
+    opt.body_width = c->body_width;
 
     opt.summary_color = parse_hex_to_rgba(c->summary_color);
     opt.body_color = parse_hex_to_rgba(c->body_color);

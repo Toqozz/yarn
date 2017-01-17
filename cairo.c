@@ -40,7 +40,7 @@ void draw_panel(cairo_t *context, Color bd, Color bg, int x, int y, int w, int h
 
     cairo_set_source_rgba(context, bg.red, bg.blue, bg.green, bg.alpha);
     cairo_rectangle(context, x + bw, y + bw, w - bw*2, h - bw*2);
-    cairo_fill_preserve(context);
+    cairo_fill(context);
     //cairo_clip(context);
 }
 

@@ -44,10 +44,20 @@ check_fuses(void)
     {
         //printf("Fuse: %Lf, Taking away: %f\n", MessageArray[i].fuse, (double) INTERVAL/1000);
         MessageArray[i].fuse = MessageArray[i].fuse - (double)INTERVAL/1000;
-        if (MessageArray[i].fuse <= 0)
+        if (MessageArray[i].fuse <= 0) {
             queue_delete(&queuespec, i);
             queue_align(queuespec);
+        }
     }
+}
+
+void
+draw_clear_surface(cairo_t *context)
+{
+    cairo_save(context);
+    cairo_set_operator(context, CAIRO_OPERATOR_CLEAR);
+    cairo_paint(context);
+    cairo_restore(context);
 }
 
 void
@@ -76,65 +86,73 @@ draw(void)
     int running;
     for (running = 1; running == 1;)
     {
-        //printf("timepassed: %d\n", timepassed);
+        // If there is any kind of redraw, clear the surface.
+        for (int j = 0; j < queuespec.rear; j++) {
+            if (MessageArray[j].redraw)
+                draw_clear_surface(context);
+            break;
+        }
+
         // New group (everything is pre-rendered and then shown at the same time).
         cairo_push_group(context);
 
         // Draw each panel.
         for (int i = 0; i < queuespec.rear; i++)
         {
-            // Every message must have a summary at least.
-            // TODO, could maybe have an "initial run" thing on message instead.
-            if (MessageArray[i].swidth == 0) {
+            // Redraw a message when we need to.
+            if (MessageArray[i].redraw) {
                 pango_layout_set_markup(layout, MessageArray[i].summary, -1);
                 pango_layout_set_width(layout, opt.summary_width*PANGO_SCALE);
                 // Pixel extents are much better for this purpose.
                 pango_layout_get_pixel_extents(layout, &sextents, NULL);
                 MessageArray[i].swidth = sextents.width;
+
+                draw_panel_shadow(context, opt.shadow_color,
+                        MessageArray[i].x + opt.shadow_xoffset,
+                        MessageArray[i].y + opt.shadow_yoffset,
+                        opt.width, opt.height);
+                draw_panel(context, opt.bdcolor, opt.bgcolor, MessageArray[i].x, MessageArray[i].y, opt.width, opt.height, opt.bw);
+
+                pango_layout_set_markup(layout, MessageArray[i].summary, -1);
+                pango_layout_set_width(layout, opt.summary_width*PANGO_SCALE);
+                cairo_set_source_rgba(context, opt.summary_color.red, opt.summary_color.green, opt.summary_color.blue, opt.summary_color.alpha);
+                cairo_move_to(context, MessageArray[i].x + opt.margin + opt.bw, MessageArray[i].texty + opt.overline);
+                pango_cairo_show_layout(context, layout);
+
+                MessageArray[i].redraw = 0;
             }
 
-            MessageArray[i].textx+=2;
-
-            draw_panel_shadow(context, opt.shadow_color,
-                    MessageArray[i].x + opt.shadow_xoffset,
-                    MessageArray[i].y + opt.shadow_yoffset,
-                    opt.width, opt.height);
-            draw_panel(context, opt.bdcolor, opt.bgcolor, MessageArray[i].x, MessageArray[i].y, opt.width, opt.height, opt.bw);
+            MessageArray[i].textx++;
 
             // Make sure that we dont draw out of the box after this point.
+            // TODO, make it cleaner.
             cairo_save(context);
+
+            cairo_set_operator(context, CAIRO_OPERATOR_SOURCE);
+            cairo_rectangle(context, MessageArray[i].x + (2*opt.margin) + MessageArray[i].swidth + opt.bw,
+                    MessageArray[i].y + opt.bw,
+                    ((opt.width - opt.bw*2) - opt.margin*2) - MessageArray[i].swidth,
+                    opt.height-opt.bw*2);
+            cairo_set_source_rgba(context, opt.bgcolor.red, opt.bgcolor.green, opt.bgcolor.blue, opt.bgcolor.alpha);
+            cairo_fill_preserve(context);
             cairo_clip(context);
 
             // Push the body to the soure.
             pango_layout_set_markup(layout, MessageArray[i].body, -1);
-            pango_layout_set_width(layout, 250*PANGO_SCALE);
+            pango_layout_set_width(layout, opt.body_width*PANGO_SCALE);
             cairo_set_source_rgba(context, opt.body_color.red, opt.body_color.green, opt.body_color.blue, opt.body_color.alpha);
-            cairo_move_to(context, (opt.width - MessageArray[i].textx), MessageArray[i].texty + opt.overline);
+            cairo_move_to(context, (opt.width - MessageArray[i].textx), MessageArray[i].texty + opt.overline); //TODO, overline can be baked into texty
             pango_cairo_show_layout(context, layout);
 
-            // Draw over the body with a margin (+ bit more room for summary).
-            cairo_set_source_rgba(context, opt.bgcolor.red, opt.bgcolor.green, opt.bgcolor.blue, opt.bgcolor.alpha);
-            cairo_rectangle(context, MessageArray[i].x + opt.bw,
-                        MessageArray[i].y + opt.bw,
-                        opt.margin + MessageArray[i].swidth + opt.margin,
-                        opt.height - opt.bw*2);
-            cairo_fill(context);
-
-            // Summary is last (topmost).
-            pango_layout_set_markup(layout, MessageArray[i].summary, -1);
-            pango_layout_set_width(layout, opt.summary_width*PANGO_SCALE);
-            cairo_set_source_rgba(context, opt.summary_color.red, opt.summary_color.green, opt.summary_color.blue, opt.summary_color.alpha);
-            cairo_move_to(context, MessageArray[i].x + opt.margin + opt.bw, MessageArray[i].texty + opt.overline);
-            pango_cairo_show_layout(context, layout);
-
-            // We can draw outside next time.
+            // We should be able to draw out of the box next time.
             cairo_restore(context);
         }
 
         cairo_pop_group_to_source(context);
 
         // Paint over the group.
-        cairo_set_operator(context, CAIRO_OPERATOR_SOURCE);
+        // TODO, when using over, how do we handle overlaying opacity?
+        //cairo_set_operator(context, CAIRO_OPERATOR_OVER);
         cairo_paint(context);
         cairo_surface_flush(surface);
 
@@ -165,18 +183,17 @@ draw(void)
 
         // If the queue is empty, kill this thread basically.
         if (in_queue(queuespec) == 0) {
-            //exit(0);
             running = 0;
         }
 
         // Finally sleep ("animation").
         nanosleep(&req, &req);
-        //printf("%d\n", timepassed);
     }
 
     // Destroy once done.
-    g_object_unref(layout);
     pango_cairo_font_map_set_default(NULL);
+    //g_object_unref(layout);
+    g_clear_object(&layout);
     cairo_destroy(context);
 
     destroy(surface);

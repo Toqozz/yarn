@@ -18,12 +18,14 @@
 
 // pthread types.
 pthread_t split_notification;
+pthread_attr_t tattr;
 pthread_mutex_t stack_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 extern Queue queuespec;
-extern Message MessageArray[QUEUESIZE];
+//extern Message MessageArray[QUEUESIZE];
 extern Variables opt;
 
+// Maybe this can be moved so its not a global.
 static bool THREAD_ALIVE = false;
 
 void
@@ -61,7 +63,7 @@ message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
     m.texty = texty;
     m.x = x;
     m.y = y;
-    m.visible = 1;
+    m.redraw = 1;
     m.fuse = fuse;
 
     return m;
@@ -88,22 +90,28 @@ run(void *arg)
     // TODO, lowercase, its not a constant...
     THREAD_ALIVE = false;
 
-    return NULL;
+    pthread_exit(NULL);
 }
 
 void
 prepare(Notification *n)
 {
+    int ret;
+
     // If there aren't any notifications being shown, we need to create a new thread.
     if (THREAD_ALIVE == false) {
         // 1 == true == error.
-        if (pthread_create(&split_notification, NULL, &run, (void *)n)) {
-            perror("Could not create pthread");
+        pthread_attr_init(&tattr);
+        pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
+
+        ret = pthread_create(&split_notification, &tattr, &run, (void *)n);
+        if (ret != 0) {
+            perror("pthread_create() error");
             return;
-        } else {
-            pthread_detach(split_notification);
-            THREAD_ALIVE = true;
         }
+
+        THREAD_ALIVE = true;
+
     // If there are notifications being shown, simply add the new notification to the queue.
     } else {
         // Queue full, remove one first.

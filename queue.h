@@ -5,6 +5,7 @@
 
 #include <stdbool.h>
 #include "datatypes.h"
+#include "cairo.h"
 
 void
 queue_insert(Queue *queuespec, Message message);

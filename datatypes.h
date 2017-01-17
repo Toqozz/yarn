@@ -33,6 +33,7 @@ typedef struct Config {
     int shadow_yoffset;
 
     int summary_width;
+    int body_width;
 
     const char *summary_color;
     const char *body_color;
@@ -63,7 +64,7 @@ typedef struct Message {
     int   texty;
     int   x;
     int   y;
-    int   visible;
+    int   redraw;
     long double fuse;
 } Message;
 
@@ -81,6 +82,7 @@ typedef struct Variables {
     int   shadow_yoffset;
 
     int summary_width;
+    int body_width;
 
     Color summary_color;
     Color body_color;
