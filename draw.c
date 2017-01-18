@@ -122,7 +122,8 @@ draw(void)
                 MessageArray[i].redraw = 0;
             }
 
-            MessageArray[i].textx++;
+            printf("textx: %d\n", MessageArray[i].textx);
+            MessageArray[i].textx < (((opt.width - opt.bw*2) - MessageArray[i].swidth) - opt.margin) ? MessageArray[i].textx++ : false;
 
             // Make sure that we dont draw out of the box after this point.
             // TODO, make it cleaner.
