@@ -63,7 +63,6 @@ message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
     m.texty = texty;
     m.x = x;
     m.y = y;
-    m.redraw = 1;
     m.fuse = fuse;
 
     return m;
@@ -73,14 +72,18 @@ void *
 run(void *arg)
 {
     Notification *n = (Notification*) arg;
+    // Shadows have made this a bit annoying.
+    int xoffset = parse_offset_value(opt.shadow_xoffset),
+        yoffset = parse_offset_value(opt.shadow_yoffset);
 
     // string, text x, text y, x, y, fuse.
+    // These positions are based on the cairo surface, so it must be
     Message message = message_create(n,             // Notification struct.
-                                     0,             // text x
-                                     0,             // text y
-                                     0,             // x
-                                     0,             // y
-                                     opt.timeout); // fuse
+                                     0 + xoffset,   // textx
+                                     in_queue(queuespec) * (opt.height + opt.gap) + yoffset,   // texty
+                                     0 + xoffset,   // x
+                                     in_queue(queuespec) * (opt.height + opt.gap) + yoffset,   // y
+                                     opt.timeout);  // fuse
     queue_insert(&queuespec, message);
     notification_destroy(n);
 
@@ -98,6 +101,7 @@ prepare(Notification *n)
 {
     int ret;
 
+    // TODO, change opt.timeout to n->expire_timeout.
     // If there aren't any notifications being shown, we need to create a new thread.
     if (THREAD_ALIVE == false) {
         // 1 == true == error.
@@ -114,6 +118,9 @@ prepare(Notification *n)
 
     // If there are notifications being shown, simply add the new notification to the queue.
     } else {
+        int xoffset = parse_offset_value(opt.shadow_xoffset),
+            yoffset = parse_offset_value(opt.shadow_yoffset);
+
         // Queue full, remove one first.
         if (queuespec.rear == opt.max_notifications) {
             queue_delete(&queuespec, 0);
@@ -121,10 +128,10 @@ prepare(Notification *n)
         }
 
         Message message = message_create(n,
-                                         0,
-                                         queuespec.rear * (opt.height + opt.gap),
-                                         0,
-                                         queuespec.rear * (opt.height + opt.gap),
+                                         0 + xoffset,
+                                         in_queue(queuespec) * (opt.height + opt.gap) + yoffset,
+                                         0 + xoffset,
+                                         in_queue(queuespec) * (opt.height + opt.gap) + yoffset,
                                          opt.timeout);
 
         queue_insert(&queuespec, message);

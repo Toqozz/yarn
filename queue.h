@@ -19,4 +19,7 @@ queue_align(Queue queuespec);
 int
 in_queue(Queue queuespec);
 
+int
+in_queue_reversed(Queue queuespec);
+
 #endif

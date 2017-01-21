@@ -112,42 +112,52 @@ parse_quote_markup(const char *text)
 
     //printf("quote markup from: %s\n", text);
 
-    temp = repl_str(temp, "&", "&amp;");
+    temp = repl_str(text, "&", "&amp;");
     temp = repl_str(temp, "'", "&apos;");
     temp = repl_str(temp, "\"", "&quot;");
 
     // Just these for now... can add more!
     // We don't need this stuff, its a user convenience thing.
     // Also, maybe hack the repl_str code to occlude these.
-    temp = repl_str(text, "<b>", "&bld;");
+    temp = repl_str(temp, "<b>", "&bld;");
     temp = repl_str(temp, "</b>", "&bldc;");
-    temp = repl_str(text, "<i>", "&it;");
+    temp = repl_str(temp, "<i>", "&it;");
     temp = repl_str(temp, "</i>", "&itc;");
-    temp = repl_str(text, "<s>", "&st;");
+    temp = repl_str(temp, "<s>", "&st;");
     temp = repl_str(temp, "</s>", "&stc;");
-    temp = repl_str(text, "<s>", "&st;");
+    temp = repl_str(temp, "<s>", "&st;");
     temp = repl_str(temp, "</s>", "&stc;");
-    temp = repl_str(text, "<u>", "&und;");
+    temp = repl_str(temp, "<u>", "&und;");
     temp = repl_str(temp, "</u>", "&undc;");
 
     // These are annoying.
     temp = repl_str(temp, "<", "&lt;");
     temp = repl_str(temp, ">", "&gt;");
 
-    temp = repl_str(text, "&bld;", "<b>");
+    temp = repl_str(temp, "&bld;", "<b>");
     temp = repl_str(temp, "&bldc;", "</b>");
-    temp = repl_str(text, "&it;", "<i>");
+    temp = repl_str(temp, "&it;", "<i>");
     temp = repl_str(temp, "&itc;", "</i>");
-    temp = repl_str(text, "&st;", "<s>");
+    temp = repl_str(temp, "&st;", "<s>");
     temp = repl_str(temp, "&stc;", "</s>");
-    temp = repl_str(text, "&st;", "<s>");
+    temp = repl_str(temp, "&st;", "<s>");
     temp = repl_str(temp, "&stc;", "</s>");
-    temp = repl_str(text, "&und;", "<u>");
+    temp = repl_str(temp, "&und;", "<u>");
     temp = repl_str(temp, "&undc;", "</u>");
 
     //printf("new string: %s\n", temp);
 
     return temp;
+}
+
+/* Figure whether a message needs to be moved */
+int
+parse_offset_value(int value)
+{
+    if (value < 0)
+        return abs(value);
+    else
+        return 0;
 }
 
 

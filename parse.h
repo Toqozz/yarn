@@ -18,4 +18,7 @@ parse_strip_markup(const char *text);
 char *
 parse_quote_markup(const char *text);
 
+int
+parse_offset_value(int value);
+
 #endif

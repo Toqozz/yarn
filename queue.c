@@ -6,6 +6,7 @@
 #include "datatypes.h"
 #include "queue.h"
 #include "cairo.h"
+#include "parse.h"
 
 extern Message MessageArray[QUEUESIZE];
 extern Variables opt;
@@ -16,7 +17,7 @@ extern Variables opt;
 void
 queue_insert(Queue *queuespec, Message message)
 {
-    if (queuespec->rear == QUEUESIZE-1)
+    if (queuespec->rear == QUEUESIZE)
         fprintf(stderr, "Queue is full, skipped.\n");
     else
     {
@@ -27,6 +28,8 @@ queue_insert(Queue *queuespec, Message message)
         // Add item to array.
         // There is a new item, the end is pushed back.
         MessageArray[queuespec->rear++] = message;
+
+        opt.redraw = 1;
     }
 }
 
@@ -59,11 +62,23 @@ queue_delete(Queue *queuespec, int position)
 void
 queue_align (Queue queuespec)
 {
+    int yoffset = parse_offset_value(opt.shadow_xoffset);
+
+    /*
     for (int i = 0; i < queuespec.rear; i++) {
-        MessageArray[i].y = i * (opt.height + opt.gap);
-        MessageArray[i].texty = i * (opt.height + opt.gap);
-        MessageArray[i].redraw = 1;
+        int t = queuespec.rear - i;
+        printf("t: %d\n", t);
+        MessageArray[i].y = t * (opt.height + opt.gap) + yoffset;
+        MessageArray[i].texty = t * (opt.height + opt.gap) + yoffset;
     }
+    */
+
+    for (int i = 0; i < in_queue(queuespec); i++) {
+        MessageArray[i].y = i * (opt.height + opt.gap) + yoffset;
+        MessageArray[i].texty = i * (opt.height + opt.gap) + yoffset;
+    }
+
+    opt.redraw = 1;
 }
 
 /* Simply return the amount of items in the queue. */
@@ -73,3 +88,9 @@ in_queue(Queue queuespec)
     return queuespec.rear;
 }
 
+/* Reversed queue value. (notifications going up instead of down) */
+int
+in_queue_reversed(Queue queuespec)
+{
+    return (opt.max_notifications - 1) - queuespec.rear;
+}

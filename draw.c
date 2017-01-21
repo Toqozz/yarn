@@ -36,7 +36,7 @@ Queue queuespec = { 0, -1 };
 Message MessageArray[QUEUESIZE];
 extern Variables opt;
 
-// Check on each message's fuse and delete burnt ones from the queue.
+/* Check on each message's timeouts and delete burnt ones from the queue */
 void
 check_fuses(void)
 {
@@ -51,15 +51,19 @@ check_fuses(void)
     }
 }
 
+/* Clear surface to a blank/fresh state */
 void
 draw_clear_surface(cairo_t *context)
 {
     cairo_save(context);
+
     cairo_set_operator(context, CAIRO_OPERATOR_CLEAR);
     cairo_paint(context);
+
     cairo_restore(context);
 }
 
+/* Draw/update everything in a loop */
 void
 draw(void)
 {
@@ -69,11 +73,16 @@ draw(void)
     PangoLayout *layout;
     PangoFontDescription *desc;
 
+    // Figure out the total surface area that will be drawn on.
+    int width = opt.width + abs(opt.shadow_xoffset);
+    int height = ((opt.height * opt.max_notifications) + (opt.gap * (opt.max_notifications - 1)) + abs(opt.shadow_yoffset));
+    // Figure out where exactly the surface needs to be positioned (can change with different shadow geometry).
+    int xpos = opt.xpos + (opt.shadow_xoffset < 0 ? opt.shadow_xoffset : 0);
+    int ypos = opt.ypos + (opt.shadow_yoffset < 0 ? opt.shadow_yoffset : 0);
+
     // Surface for drawing on, layout for putting the font on.
-    // TODO: different when the shadow offset is negative.
-    int width = opt.width + opt.shadow_xoffset;
-    int height = ((opt.height * opt.max_notifications) + (opt.gap * (opt.max_notifications - 1)) + opt.shadow_yoffset);
-    surface = cairo_create_x11_surface(opt.xpos, opt.ypos, width, height);
+    //surface = cairo_create_x11_surface(opt.xpos, opt.ypos, width, height);
+    surface = cairo_create_x11_surface(xpos, ypos, width, height);
     context = cairo_create(surface);
     layout = pango_cairo_create_layout(context);
 
@@ -83,24 +92,16 @@ draw(void)
     pango_font_description_free(desc); // be free my child.
     pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
 
-    int running;
+    int running, i;
     for (running = 1; running == 1;)
     {
-        // If there is any kind of redraw, clear the surface.
-        for (int j = 0; j < queuespec.rear; j++) {
-            if (MessageArray[j].redraw)
-                draw_clear_surface(context);
-            break;
-        }
-
-        // New group (everything is pre-rendered and then shown at the same time).
-        cairo_push_group(context);
-
-        // Draw each panel.
-        for (int i = 0; i < queuespec.rear; i++)
+        // If we need to redraw, clear the surface and redraw notifications.
+        if (opt.redraw)
         {
-            // Redraw a message when we need to.
-            if (MessageArray[i].redraw) {
+            draw_clear_surface(context);
+
+            for (i = 0; i < queuespec.rear; i++)
+            {
                 pango_layout_set_markup(layout, MessageArray[i].summary, -1);
                 pango_layout_set_width(layout, opt.summary_width*PANGO_SCALE);
                 // Pixel extents are much better for this purpose.
@@ -118,15 +119,22 @@ draw(void)
                 cairo_set_source_rgba(context, opt.summary_color.red, opt.summary_color.green, opt.summary_color.blue, opt.summary_color.alpha);
                 cairo_move_to(context, MessageArray[i].x + opt.margin + opt.bw, MessageArray[i].texty + opt.overline);
                 pango_cairo_show_layout(context, layout);
-
-                MessageArray[i].redraw = 0;
             }
 
-            printf("textx: %d\n", MessageArray[i].textx);
-            MessageArray[i].textx < (((opt.width - opt.bw*2) - MessageArray[i].swidth) - opt.margin) ? MessageArray[i].textx++ : false;
+            opt.redraw = 0;
+        }
+
+        // New group (everything is pre-rendered and then shown at the same time).
+        cairo_push_group(context);
+
+        // Draw body text in each panel.
+        for (i = 0; i < queuespec.rear; i++)
+        {
+            // TODO, opt.margin*3, add option for the *3 or have a separate option probably.
+            // Progress the text if it has not reached the end yet.
+            MessageArray[i].textx < (((opt.width - opt.bw*2) - MessageArray[i].swidth) - opt.margin*3) ? MessageArray[i].textx++ : false;
 
             // Make sure that we dont draw out of the box after this point.
-            // TODO, make it cleaner.
             cairo_save(context);
 
             cairo_set_operator(context, CAIRO_OPERATOR_SOURCE);
@@ -152,8 +160,6 @@ draw(void)
         cairo_pop_group_to_source(context);
 
         // Paint over the group.
-        // TODO, when using over, how do we handle overlaying opacity?
-        //cairo_set_operator(context, CAIRO_OPERATOR_OVER);
         cairo_paint(context);
         cairo_surface_flush(surface);
 
@@ -193,7 +199,6 @@ draw(void)
 
     // Destroy once done.
     pango_cairo_font_map_set_default(NULL);
-    //g_object_unref(layout);
     g_clear_object(&layout);
     cairo_destroy(context);
 
