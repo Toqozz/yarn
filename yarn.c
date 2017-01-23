@@ -65,6 +65,8 @@ message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
     m.y = y;
     m.fuse = fuse;
 
+    m.redraw = 1;
+
     return m;
 }
 

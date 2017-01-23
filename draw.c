@@ -96,39 +96,42 @@ draw(void)
     for (running = 1; running == 1;)
     {
         // If we need to redraw, clear the surface and redraw notifications.
-        if (opt.redraw)
+        for (i = 0; i < in_queue(queuespec); i++)
         {
-            draw_clear_surface(context);
-
-            for (i = 0; i < queuespec.rear; i++)
+            if (MessageArray[i].redraw)
             {
-                pango_layout_set_markup(layout, MessageArray[i].summary, -1);
-                pango_layout_set_width(layout, opt.summary_width*PANGO_SCALE);
-                // Pixel extents are much better for this purpose.
-                pango_layout_get_pixel_extents(layout, &sextents, NULL);
-                MessageArray[i].swidth = sextents.width;
+                draw_clear_surface(context);
 
-                draw_panel_shadow(context, opt.shadow_color,
-                        MessageArray[i].x + opt.shadow_xoffset,
-                        MessageArray[i].y + opt.shadow_yoffset,
-                        opt.width, opt.height);
-                draw_panel(context, opt.bdcolor, opt.bgcolor, MessageArray[i].x, MessageArray[i].y, opt.width, opt.height, opt.bw);
+                for (i = 0; i < in_queue(queuespec); i++)
+                {
+                    pango_layout_set_markup(layout, MessageArray[i].summary, -1);
+                    pango_layout_set_width(layout, opt.summary_width*PANGO_SCALE);
+                    // Pixel extents are much better for this purpose.
+                    pango_layout_get_pixel_extents(layout, &sextents, NULL);
+                    MessageArray[i].swidth = sextents.width;
 
-                pango_layout_set_markup(layout, MessageArray[i].summary, -1);
-                pango_layout_set_width(layout, opt.summary_width*PANGO_SCALE);
-                cairo_set_source_rgba(context, opt.summary_color.red, opt.summary_color.green, opt.summary_color.blue, opt.summary_color.alpha);
-                cairo_move_to(context, MessageArray[i].x + opt.margin + opt.bw, MessageArray[i].texty + opt.overline);
-                pango_cairo_show_layout(context, layout);
+                    draw_panel_shadow(context, opt.shadow_color,
+                            MessageArray[i].x + opt.shadow_xoffset,
+                            MessageArray[i].y + opt.shadow_yoffset,
+                            opt.width, opt.height);
+                    draw_panel(context, opt.bdcolor, opt.bgcolor, MessageArray[i].x, MessageArray[i].y, opt.width, opt.height, opt.bw);
+
+                    pango_layout_set_markup(layout, MessageArray[i].summary, -1);
+                    pango_layout_set_width(layout, opt.summary_width*PANGO_SCALE);
+                    cairo_set_source_rgba(context, opt.summary_color.red, opt.summary_color.green, opt.summary_color.blue, opt.summary_color.alpha);
+                    cairo_move_to(context, MessageArray[i].x + opt.margin + opt.bw, MessageArray[i].texty + opt.overline);
+                    pango_cairo_show_layout(context, layout);
+
+                    MessageArray[i].redraw = 0;
+                }
+
+                break;
             }
-
-            opt.redraw = 0;
         }
 
-        // New group (everything is pre-rendered and then shown at the same time).
-        cairo_push_group(context);
 
         // Draw body text in each panel.
-        for (i = 0; i < queuespec.rear; i++)
+        for (i = 0; i < in_queue(queuespec); i++)
         {
             // TODO, opt.margin*3, add option for the *3 or have a separate option probably.
             // Progress the text if it has not reached the end yet.
@@ -138,9 +141,9 @@ draw(void)
             cairo_save(context);
 
             cairo_set_operator(context, CAIRO_OPERATOR_SOURCE);
-            cairo_rectangle(context, MessageArray[i].x + (2*opt.margin) + MessageArray[i].swidth + opt.bw,
+            cairo_rectangle(context, MessageArray[i].x + (4*opt.margin) + MessageArray[i].swidth + opt.bw,
                     MessageArray[i].y + opt.bw,
-                    ((opt.width - opt.bw*2) - opt.margin*2) - MessageArray[i].swidth,
+                    ((opt.width - opt.bw*2) - opt.margin*4) - MessageArray[i].swidth,
                     opt.height-opt.bw*2);
             cairo_set_source_rgba(context, opt.bgcolor.red, opt.bgcolor.green, opt.bgcolor.blue, opt.bgcolor.alpha);
             cairo_fill_preserve(context);
@@ -157,10 +160,6 @@ draw(void)
             cairo_restore(context);
         }
 
-        cairo_pop_group_to_source(context);
-
-        // Paint over the group.
-        cairo_paint(context);
         cairo_surface_flush(surface);
 
         // Clue in for x events (allows to check for hotkeys, stuff like that).

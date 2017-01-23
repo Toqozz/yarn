@@ -64,6 +64,7 @@ typedef struct Message {
     int   texty;
     int   x;
     int   y;
+    int   redraw;
     long double fuse;
 } Message;
 
@@ -99,8 +100,6 @@ typedef struct Variables {
     int   margin;
     int   overline;
     int   bw;
-
-    int redraw;
 } Variables;
 
 #endif

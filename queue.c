@@ -28,8 +28,6 @@ queue_insert(Queue *queuespec, Message message)
         // Add item to array.
         // There is a new item, the end is pushed back.
         MessageArray[queuespec->rear++] = message;
-
-        opt.redraw = 1;
     }
 }
 
@@ -76,9 +74,8 @@ queue_align (Queue queuespec)
     for (int i = 0; i < in_queue(queuespec); i++) {
         MessageArray[i].y = i * (opt.height + opt.gap) + yoffset;
         MessageArray[i].texty = i * (opt.height + opt.gap) + yoffset;
+        MessageArray[i].redraw = 1;
     }
-
-    opt.redraw = 1;
 }
 
 /* Simply return the amount of items in the queue. */
