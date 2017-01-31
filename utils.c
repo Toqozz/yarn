@@ -8,8 +8,7 @@
 #include <stdint.h>
 #endif
 
-#include "utils.h"
-
+/* Replace a string inside a string with another string. */
 char *
 repl_str(const char *str, const char *from, const char *to)
 {
@@ -93,3 +92,4 @@ end_repl_str:
     free(pos_cache);
     return ret;
 }
+

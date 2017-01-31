@@ -1,6 +1,16 @@
 #ifndef DATATYPES_H_INCLUDED
 #define DATATYPES_H_INCLUDED
 
+#include <cairo-xlib.h>
+#include <pango/pangocairo.h>
+
+typedef struct Toolbox {
+    cairo_t              *ctx;
+    cairo_surface_t      *sfc;
+    PangoLayout          *lyt;
+    PangoFontDescription *dsc;
+} Toolbox;
+
 typedef struct Color {
     double red;
     double green;
@@ -101,5 +111,6 @@ typedef struct Variables {
     int   overline;
     int   bw;
 } Variables;
+
 
 #endif

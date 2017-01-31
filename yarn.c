@@ -13,13 +13,13 @@
 #include "queue.h"
 #include "cairo.h"
 #include "cfg.h"
+//#include "utils.h"
 
 //TODO; look up thread safety things.
 
 // pthread types.
 pthread_t split_notification;
 pthread_attr_t tattr;
-pthread_mutex_t stack_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 extern Queue queuespec;
 //extern Message MessageArray[QUEUESIZE];

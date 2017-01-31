@@ -4,6 +4,8 @@
 #include <X11/Xlib.h>
 #include <cairo.h>
 
+#include "datatypes.h"
+
 static void
 x_set_wm(Window win, Display *dsp);
 
@@ -18,6 +20,6 @@ void
 x_resize_window(Display *dsp, Window win, int x, int y);
 
 void
-destroy(cairo_surface_t *sfc);
+yarn_destroy(Toolbox box);
 
 #endif

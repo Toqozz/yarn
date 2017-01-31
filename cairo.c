@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #include <cairo.h>
-#include <cairo-xlib.h>
+//#include <cairo-xlib.h>
 
 #include "cairo.h"
 #include "datatypes.h"

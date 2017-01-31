@@ -9,6 +9,7 @@
 #include <stdbool.h>
 
 #include "x.h"
+#include "datatypes.h"
 
 // Apply atoms to window.
 static void
@@ -143,14 +144,21 @@ x_resize_window(Display *dsp, Window win, int x, int y)
     XConfigureWindow(dsp, win, CWWidth | CWHeight, &values);
 }
 
+/* Destroy all the window related stuff.
+ * (drawing, font, window) */
 void
-destroy(cairo_surface_t *sfc)
+yarn_destroy(Toolbox t)
 {
-    Display *dsp = cairo_xlib_surface_get_display(sfc);
-    Drawable draw = cairo_xlib_surface_get_drawable(sfc);
+    Display *dsp = cairo_xlib_surface_get_display(t.sfc);
+    Drawable draw = cairo_xlib_surface_get_drawable(t.sfc);
 
-    cairo_surface_destroy(sfc);
-    cairo_debug_reset_static_data();
+    pango_cairo_font_map_set_default(NULL);
+    g_clear_object(&t.lyt);
+    cairo_destroy(t.ctx);
+
     XDestroyWindow(dsp, draw);
     XCloseDisplay(dsp);
+
+    cairo_surface_destroy(t.sfc);
+    cairo_debug_reset_static_data();
 }

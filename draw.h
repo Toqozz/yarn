@@ -8,6 +8,9 @@ void
 check_fuses(void);
 
 void
+draw_setup_toolbox(Toolbox *box);
+
+void
 draw_clear_surface(cairo_t *context);
 
 void
