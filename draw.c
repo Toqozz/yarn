@@ -69,11 +69,6 @@ draw_setup_toolbox(Toolbox *t)
     pango_layout_set_ellipsize(t->lyt, PANGO_ELLIPSIZE_END);
 }
 
-void
-draw_toolbox_destroy(Toolbox *t)
-{
-}
-
 /* Clear surface to a blank/fresh state */
 void
 draw_clear_surface(cairo_t *context)

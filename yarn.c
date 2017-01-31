@@ -25,8 +25,7 @@ extern Queue queuespec;
 //extern Message MessageArray[QUEUESIZE];
 extern Variables opt;
 
-// Maybe this can be moved so its not a global.
-static bool THREAD_ALIVE = false;
+static bool thread_alive = false;
 
 void
 notification_destroy(Notification *n)
@@ -70,6 +69,13 @@ message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
     return m;
 }
 
+void
+notify_setup(Notification *n)
+{
+    if (n->expire_timeout <= 0)
+        n->expire_timeout = opt.timeout;
+}
+
 void *
 run(void *arg)
 {
@@ -85,7 +91,7 @@ run(void *arg)
                                      in_queue(queuespec) * (opt.height + opt.gap) + yoffset,   // texty
                                      0 + xoffset,   // x
                                      in_queue(queuespec) * (opt.height + opt.gap) + yoffset,   // y
-                                     opt.timeout);  // fuse
+                                     n->expire_timeout);  // fuse
     queue_insert(&queuespec, message);
     notification_destroy(n);
 
@@ -93,7 +99,7 @@ run(void *arg)
     draw();
 
     // TODO, lowercase, its not a constant...
-    THREAD_ALIVE = false;
+    thread_alive = false;
 
     pthread_exit(NULL);
 }
@@ -103,9 +109,11 @@ prepare(Notification *n)
 {
     int ret;
 
-    // TODO, change opt.timeout to n->expire_timeout.
+    notify_setup(n);
+
     // If there aren't any notifications being shown, we need to create a new thread.
-    if (THREAD_ALIVE == false) {
+    // If there are notifications being shown, simply add the new notification to the queue.
+    if (thread_alive == false) {
         // 1 == true == error.
         pthread_attr_init(&tattr);
         pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
@@ -116,9 +124,7 @@ prepare(Notification *n)
             return;
         }
 
-        THREAD_ALIVE = true;
-
-    // If there are notifications being shown, simply add the new notification to the queue.
+        thread_alive = true;
     } else {
         int xoffset = parse_offset_value(opt.shadow_xoffset),
             yoffset = parse_offset_value(opt.shadow_yoffset);
@@ -134,7 +140,7 @@ prepare(Notification *n)
                                          in_queue(queuespec) * (opt.height + opt.gap) + yoffset,
                                          0 + xoffset,
                                          in_queue(queuespec) * (opt.height + opt.gap) + yoffset,
-                                         opt.timeout);
+                                         n->expire_timeout);
 
         queue_insert(&queuespec, message);
         notification_destroy(n);
