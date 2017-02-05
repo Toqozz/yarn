@@ -46,9 +46,6 @@ queue_delete(Queue *queuespec, int position)
 
     // Move each item down one.
     else {
-        // TODO make this cleaner.
-        //free(MessageArray[position].summary);
-        //free(MessageArray[position].body);
         message_destroy(&MessageArray[position]);
         for (i = position; i < queuespec->rear-1; i++)
             MessageArray[i] = MessageArray[i+1];

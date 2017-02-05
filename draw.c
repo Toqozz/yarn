@@ -86,6 +86,12 @@ draw_redraw(Toolbox box)
         pthread_mutex_unlock(&lock);
     }
 
+    //TODO resize window with ...
+    //gotta change opt.width and stuff so its easy.
+    // Resize the window.
+    //x_resize_window()
+    //cairo_xlib_surface_get_drawable(sfc);
+
 }
 
 void

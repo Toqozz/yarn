@@ -98,7 +98,8 @@ run(void *arg)
         yoffset = parse_offset_value(opt.shadow_yoffset);
 
     // string, text x, text y, x, y, fuse.
-    // These positions are based on the cairo surface, so it must be
+    // These positions are based on the cairo surface, so it starts at 0 regardless of
+    // the window's position on the screen.
     Message message = message_create(n,             // Notification struct.
                                      0 + xoffset,   // textx
                                      in_queue(queuespec) * (opt.height + opt.gap) + yoffset,   // texty
@@ -111,7 +112,7 @@ run(void *arg)
     // Draw...
     draw();
 
-    // TODO, lowercase, its not a constant...
+    // When draw finishes we're done.
     thread_alive = false;
 
     pthread_exit(NULL);
@@ -127,7 +128,7 @@ prepare(Notification *n)
     // If there aren't any notifications being shown, we need to create a new thread.
     // If there are notifications being shown, simply add the new notification to the queue.
     if (thread_alive == false) {
-        // 1 == true == error.
+        // Detached threads because we never want to join to them.
         pthread_attr_init(&tattr);
         pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
 
