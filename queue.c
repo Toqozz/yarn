@@ -2,14 +2,17 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <cairo.h>
+#include <pthread.h>
 
 #include "datatypes.h"
 #include "queue.h"
 #include "cairo.h"
 #include "parse.h"
+#include "yarn.h"
 
 extern Message MessageArray[QUEUESIZE];
 extern Variables opt;
+extern pthread_mutex_t lock;
 
 /* Insert an item into the queue(s).
  * The global queue actually comprises of 2 separate arrays, but they're
@@ -42,12 +45,11 @@ queue_delete(Queue *queuespec, int position)
         fprintf(stderr, "Queue is empty -- nothing to delete.\n");
 
     // Move each item down one.
-    // Is there a leak?  Even though the rear is decreased it does not remove the message on the end really.
-    // No, because pointers are singular -> they don't get 'copied'.
     else {
         // TODO make this cleaner.
-        free(MessageArray[position].summary);
-        free(MessageArray[position].body);
+        //free(MessageArray[position].summary);
+        //free(MessageArray[position].body);
+        message_destroy(&MessageArray[position]);
         for (i = position; i < queuespec->rear-1; i++)
             MessageArray[i] = MessageArray[i+1];
         queuespec->rear--;
@@ -71,11 +73,14 @@ queue_align (Queue queuespec)
     }
     */
 
+    // Change locations to where they should be and then redraw.
+    pthread_mutex_lock(&lock);
     for (int i = 0; i < in_queue(queuespec); i++) {
         MessageArray[i].y = i * (opt.height + opt.gap) + yoffset;
         MessageArray[i].texty = i * (opt.height + opt.gap) + yoffset;
         MessageArray[i].redraw = 1;
     }
+    pthread_mutex_unlock(&lock);
 }
 
 /* Simply return the amount of items in the queue. */

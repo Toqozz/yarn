@@ -4,6 +4,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <pango/pangocairo.h>
+#include <pthread.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -34,9 +35,11 @@ Queue queuespec = { 0, -1 };
 Message MessageArray[QUEUESIZE];
 extern Variables opt;
 
+extern pthread_mutex_t lock;
+
 /* Check on each message's timeouts and delete burnt ones from the queue */
 void
-check_fuses(void)
+draw_check_fuses(void)
 {
     for (int i = 0; i < queuespec.rear; i++)
     {
@@ -47,6 +50,42 @@ check_fuses(void)
             queue_align(queuespec);
         }
     }
+}
+
+void
+draw_redraw(Toolbox box)
+{
+    // If we need to redraw, clear the surface and redraw notifications.
+    draw_clear_surface(box.ctx);
+
+    int i;
+    for (i = 0; i < in_queue(queuespec); i++)
+    {
+        pthread_mutex_lock(&lock);
+
+        pango_layout_set_markup(box.lyt, MessageArray[i].summary, -1);
+        pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
+        // Pixel extents are much better for this purpose.
+        pango_layout_get_pixel_extents(box.lyt, &box.sextents, NULL);
+        MessageArray[i].swidth = box.sextents.width;
+
+        draw_panel_shadow(box.ctx, opt.shadow_color,
+                MessageArray[i].x + opt.shadow_xoffset,
+                MessageArray[i].y + opt.shadow_yoffset,
+                opt.width, opt.height);
+        draw_panel(box.ctx, opt.bdcolor, opt.bgcolor, MessageArray[i].x, MessageArray[i].y, opt.width, opt.height, opt.bw);
+
+        pango_layout_set_markup(box.lyt, MessageArray[i].summary, -1);
+        pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
+        cairo_set_source_rgba(box.ctx, opt.summary_color.red, opt.summary_color.green, opt.summary_color.blue, opt.summary_color.alpha);
+        cairo_move_to(box.ctx, MessageArray[i].x + opt.margin + opt.bw, MessageArray[i].texty + opt.overline);
+        pango_cairo_show_layout(box.ctx, box.lyt);
+
+        MessageArray[i].redraw = 0;
+
+        pthread_mutex_unlock(&lock);
+    }
+
 }
 
 void
@@ -86,46 +125,17 @@ void
 draw(void)
 {
     Toolbox box;
-    PangoRectangle sextents;
     draw_setup_toolbox(&box);
 
     int running, i;
     for (running = 1; running == 1;)
     {
-        // If we need to redraw, clear the surface and redraw notifications.
-        for (i = 0; i < in_queue(queuespec); i++)
-        {
-            if (MessageArray[i].redraw)
-            {
-                draw_clear_surface(box.ctx);
-
-                for (i = 0; i < in_queue(queuespec); i++)
-                {
-                    pango_layout_set_markup(box.lyt, MessageArray[i].summary, -1);
-                    pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
-                    // Pixel extents are much better for this purpose.
-                    pango_layout_get_pixel_extents(box.lyt, &sextents, NULL);
-                    MessageArray[i].swidth = sextents.width;
-
-                    draw_panel_shadow(box.ctx, opt.shadow_color,
-                            MessageArray[i].x + opt.shadow_xoffset,
-                            MessageArray[i].y + opt.shadow_yoffset,
-                            opt.width, opt.height);
-                    draw_panel(box.ctx, opt.bdcolor, opt.bgcolor, MessageArray[i].x, MessageArray[i].y, opt.width, opt.height, opt.bw);
-
-                    pango_layout_set_markup(box.lyt, MessageArray[i].summary, -1);
-                    pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
-                    cairo_set_source_rgba(box.ctx, opt.summary_color.red, opt.summary_color.green, opt.summary_color.blue, opt.summary_color.alpha);
-                    cairo_move_to(box.ctx, MessageArray[i].x + opt.margin + opt.bw, MessageArray[i].texty + opt.overline);
-                    pango_cairo_show_layout(box.ctx, box.lyt);
-
-                    MessageArray[i].redraw = 0;
-                }
-
+        for (int i = 0; i < in_queue(queuespec); i++) {
+            if (MessageArray[i].redraw) {
+                draw_redraw(box);
                 break;
             }
         }
-
 
         // Draw body text in each panel.
         for (i = 0; i < in_queue(queuespec); i++)
@@ -182,7 +192,7 @@ draw(void)
         }
 
         // Check message fuses/remove from queue accordingly.
-        check_fuses();
+        draw_check_fuses();
 
         // If the queue is empty, kill this thread basically.
         if (in_queue(queuespec) == 0) {

@@ -9,6 +9,7 @@ typedef struct Toolbox {
     cairo_surface_t      *sfc;
     PangoLayout          *lyt;
     PangoFontDescription *dsc;
+    PangoRectangle        sextents;
 } Toolbox;
 
 typedef struct Color {

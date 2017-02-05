@@ -5,7 +5,10 @@
 #include "datatypes.h"
 
 void
-check_fuses(void);
+draw_check_fuses(void);
+
+void
+draw_redraw(Toolbox box);
 
 void
 draw_setup_toolbox(Toolbox *box);

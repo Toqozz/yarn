@@ -18,15 +18,24 @@
 //TODO; look up thread safety things.
 
 // pthread types.
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_t split_notification;
 pthread_attr_t tattr;
 
 extern Queue queuespec;
-//extern Message MessageArray[QUEUESIZE];
 extern Variables opt;
 
 static bool thread_alive = false;
 
+/* Initialize some variables etc */
+void
+notify_setup(Notification *n)
+{
+    if (n->expire_timeout <= 0)
+        n->expire_timeout = opt.timeout;
+}
+
+/* Free stuff from notification struct */
 void
 notification_destroy(Notification *n)
 {
@@ -39,7 +48,7 @@ notification_destroy(Notification *n)
     free(n);
 }
 
-// Create messages on the stack.
+/* Create a message that can be used for draw stuff */
 Message
 message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
 {
@@ -69,12 +78,16 @@ message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
     return m;
 }
 
+/* Free strings that are used in Message */
 void
-notify_setup(Notification *n)
+message_destroy(Message *m)
 {
-    if (n->expire_timeout <= 0)
-        n->expire_timeout = opt.timeout;
+    assert(m != NULL);
+
+    free(m->summary);
+    free(m->body);
 }
+
 
 void *
 run(void *arg)

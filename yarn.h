@@ -3,14 +3,17 @@
 
 #include "datatypes.h"
 
-Variables
-*var_create(void);
+void
+notify_setup(Notification *n);
+
+void
+notification_destroy(Notification *n);
 
 Message
 message_create(Notification *n, int textx, int texty, int x, int y, double fuse);
 
-Variables
-*var_initialize(void);
+void
+message_destroy(Message *m);
 
 void
 *run(void *arg);
