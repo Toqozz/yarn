@@ -22,8 +22,7 @@ queue_insert(Queue *queuespec, Message message)
 {
     if (queuespec->rear == QUEUESIZE)
         fprintf(stderr, "Queue is full, skipped.\n");
-    else
-    {
+    else {
         // If queue is initially empty.
         if (queuespec->front == -1)
             queuespec->front = 0;
@@ -45,11 +44,14 @@ queue_delete(Queue *queuespec, int position)
         fprintf(stderr, "Queue is empty -- nothing to delete.\n");
 
     // Move each item down one.
+    // Make sure we don't FUCK anything up, use mutexs, even though this shouldn't be run in parallel.
     else {
+        pthread_mutex_lock(&lock);
         message_destroy(&MessageArray[position]);
         for (i = position; i < queuespec->rear-1; i++)
             MessageArray[i] = MessageArray[i+1];
         queuespec->rear--;
+        pthread_mutex_unlock(&lock);
     }
 }
 
@@ -57,7 +59,7 @@ queue_delete(Queue *queuespec, int position)
  * Could actually add this to the loop in queue_delete(), but
  * I don't think that it would really be that beneficial. */
 void
-queue_align (Queue queuespec)
+queue_align(Queue queuespec)
 {
     int yoffset = parse_offset_value(opt.shadow_xoffset);
 

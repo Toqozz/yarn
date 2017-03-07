@@ -40,6 +40,10 @@ void
 notification_destroy(Notification *n)
 {
     assert(n != NULL);
+    assert(n->app_name != NULL);
+    assert(n->app_icon != NULL);
+    assert(n->summary != NULL);
+    assert(n->body != NULL);
 
     free(n->app_name);
     free(n->app_icon);
@@ -56,12 +60,15 @@ message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
     char *summary = n->summary,
          *body = n->body;
 
+    printf("... %s - %s\n", summary, body);
     // Boop boop.
     summary = parse_strip_markup(summary);
     summary = parse_quote_markup(summary);
 
     body = parse_strip_markup(body);
     body = parse_quote_markup(body);
+
+    printf("... %s - %s\n", summary, body);
 
     m.summary = strdup(summary);
     m.body = strdup(body);
@@ -83,6 +90,8 @@ void
 message_destroy(Message *m)
 {
     assert(m != NULL);
+    assert(m->summary != NULL);
+    assert(m->body != NULL);
 
     free(m->summary);
     free(m->body);
