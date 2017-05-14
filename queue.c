@@ -61,7 +61,8 @@ queue_delete(Queue *queuespec, int position)
 void
 queue_align(Queue queuespec)
 {
-    int yoffset = parse_offset_value(opt.shadow_xoffset);
+    int yoffset = parse_offset_value(opt.shadow_xoffset),
+        gap = opt.height + opt.gap;
 
     /*
     for (int i = 0; i < queuespec.rear; i++) {
@@ -75,8 +76,8 @@ queue_align(Queue queuespec)
     // Change locations to where they should be and then redraw.
     pthread_mutex_lock(&lock);
     for (int i = 0; i < in_queue(queuespec); i++) {
-        MessageArray[i].y = i * (opt.height + opt.gap) + yoffset;
-        MessageArray[i].texty = i * (opt.height + opt.gap) + yoffset;
+        MessageArray[i].y = i * gap + yoffset;
+        MessageArray[i].texty = i * gap + yoffset;
         MessageArray[i].redraw = 1;
     }
     pthread_mutex_unlock(&lock);

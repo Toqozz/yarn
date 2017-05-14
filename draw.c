@@ -32,7 +32,7 @@ struct timespec req = {0, INTERVAL*1000000};
  * accessed easily by different threads.
  * The queue is an essential part of yarn. */
 Queue queuespec = { 0, -1 };
-Message MessageArray[QUEUESIZE];
+Message MessageArray[QUEUESIZE] = { NULL };
 extern Variables opt;
 
 extern pthread_mutex_t lock;
@@ -44,54 +44,12 @@ draw_check_fuses(void)
     for (int i = 0; i < queuespec.rear; i++)
     {
         //printf("Fuse: %Lf, Taking away: %f\n", MessageArray[i].fuse, (double) INTERVAL/1000);
-        MessageArray[i].fuse = MessageArray[i].fuse - (double)INTERVAL/1000;
+        MessageArray[i].fuse = MessageArray[i].fuse - (double)INTERVAL/1000.0;
         if (MessageArray[i].fuse <= 0) {
             queue_delete(&queuespec, i);
             queue_align(queuespec);
         }
     }
-}
-
-void
-draw_redraw(Toolbox box)
-{
-    // If we need to redraw, clear the surface and redraw notifications.
-    draw_clear_surface(box.ctx);
-
-    int i;
-    for (i = 0; i < in_queue(queuespec); i++)
-    {
-        pthread_mutex_lock(&lock);
-
-        pango_layout_set_markup(box.lyt, MessageArray[i].summary, -1);
-        pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
-        // Pixel extents are much better for this purpose.
-        pango_layout_get_pixel_extents(box.lyt, &box.sextents, NULL);
-        MessageArray[i].swidth = box.sextents.width;
-
-        draw_panel_shadow(box.ctx, opt.shadow_color,
-                MessageArray[i].x + opt.shadow_xoffset,
-                MessageArray[i].y + opt.shadow_yoffset,
-                opt.width, opt.height);
-        draw_panel(box.ctx, opt.bdcolor, opt.bgcolor, MessageArray[i].x, MessageArray[i].y, opt.width, opt.height, opt.bw);
-
-        pango_layout_set_markup(box.lyt, MessageArray[i].summary, -1);
-        pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
-        cairo_set_source_rgba(box.ctx, opt.summary_color.red, opt.summary_color.green, opt.summary_color.blue, opt.summary_color.alpha);
-        cairo_move_to(box.ctx, MessageArray[i].x + opt.margin + opt.bw, MessageArray[i].texty + opt.overline);
-        pango_cairo_show_layout(box.ctx, box.lyt);
-
-        MessageArray[i].redraw = 0;
-
-        pthread_mutex_unlock(&lock);
-    }
-
-    //TODO resize window with ...
-    //gotta change opt.width and stuff so its easy.
-    // Resize the window.
-    //x_resize_window()
-    //cairo_xlib_surface_get_drawable(sfc);
-
 }
 
 void
@@ -112,6 +70,50 @@ draw_setup_toolbox(Toolbox *t)
     pango_layout_set_font_description(t->lyt, t->dsc);
     pango_font_description_free(t->dsc);
     pango_layout_set_ellipsize(t->lyt, PANGO_ELLIPSIZE_END);
+}
+
+void
+draw_redraw(Toolbox box)
+{
+    // If we need to redraw, clear the surface and redraw notifications.
+    draw_clear_surface(box.ctx);
+
+    pthread_mutex_lock(&lock);
+
+    int i;
+    for (i = 0; i < in_queue(queuespec); i++)
+    {
+
+        pango_layout_set_markup(box.lyt, MessageArray[i].summary, -1);
+        pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
+        // Pixel extents are much better for this purpose.
+        pango_layout_get_pixel_extents(box.lyt, &box.sextents, NULL);
+        MessageArray[i].swidth = box.sextents.width;
+
+        draw_panel_shadow_fill(box.ctx, opt.shadow_color,
+                MessageArray[i].x + opt.shadow_xoffset,
+                MessageArray[i].y + opt.shadow_yoffset,
+                opt.width, opt.height);
+        draw_panel_fill(box.ctx, opt.bdcolor, opt.bgcolor, MessageArray[i].x, MessageArray[i].y, opt.width, opt.height, opt.bw);
+
+        pango_layout_set_markup(box.lyt, MessageArray[i].summary, -1);
+        pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
+        cairo_set_source_rgba(box.ctx, opt.summary_color.red, opt.summary_color.green, opt.summary_color.blue, opt.summary_color.alpha);
+        cairo_move_to(box.ctx, MessageArray[i].x + opt.margin + opt.bw, MessageArray[i].texty + opt.overline);
+        pango_cairo_show_layout(box.ctx, box.lyt);
+
+        MessageArray[i].redraw = 0;
+
+    }
+
+    pthread_mutex_unlock(&lock);
+
+    //TODO resize window with ...
+    //gotta change opt.width and stuff so its easy.
+    // Resize the window.
+    //x_resize_window()
+    //cairo_xlib_surface_get_drawable(sfc);
+
 }
 
 /* Clear surface to a blank/fresh state */
@@ -153,13 +155,16 @@ draw(void)
             // Make sure that we dont draw out of the box after this point.
             cairo_save(box.ctx);
 
+            // TODO, why does this unround during loops?
             cairo_set_operator(box.ctx, CAIRO_OPERATOR_SOURCE);
-            cairo_rectangle(box.ctx, MessageArray[i].x + (4*opt.margin) + MessageArray[i].swidth + opt.bw,
-                    MessageArray[i].y + opt.bw,
-                    ((opt.width - opt.bw*2) - opt.margin*4) - MessageArray[i].swidth,
-                    opt.height-opt.bw*2);
-            cairo_set_source_rgba(box.ctx, opt.bgcolor.red, opt.bgcolor.green, opt.bgcolor.blue, opt.bgcolor.alpha);
-            cairo_fill_preserve(box.ctx);
+            draw_panel_body_fill_preserve(box.ctx, opt.bgcolor, MessageArray[i].x + (4*opt.margin) + MessageArray[i].swidth + opt.bw,
+                    MessageArray[i].y + opt.bw, ((opt.width - opt.bw*2) - opt.margin*4) - MessageArray[i].swidth, opt.height-opt.bw*2, opt.rounding);
+            //cairo_rectangle(box.ctx, MessageArray[i].x + (4*opt.margin) + MessageArray[i].swidth + opt.bw,
+                    //MessageArray[i].y + opt.bw,
+                    //((opt.width - opt.bw*2) - opt.margin*4) - MessageArray[i].swidth,
+                    //opt.height-opt.bw*2);
+            //cairo_set_source_rgba(box.ctx, opt.bgcolor.red, opt.bgcolor.green, opt.bgcolor.blue, opt.bgcolor.alpha);
+            //cairo_fill_preserve(box.ctx);
             cairo_clip(box.ctx);
 
             // Push the body to the soure.

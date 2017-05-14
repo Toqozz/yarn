@@ -160,5 +160,5 @@ yarn_destroy(Toolbox t)
     XCloseDisplay(dsp);
 
     cairo_surface_destroy(t.sfc);
-    cairo_debug_reset_static_data();
+    //cairo_debug_reset_static_data();
 }

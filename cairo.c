@@ -10,14 +10,16 @@
 #include "cairo.h"
 #include "datatypes.h"
 
+extern Variables opt;
+
 // Modified from http://cairographics.org/samples/rounded_rectangle/
 void rounded_rectangle(cairo_t *context,
                        double x, double y,
                        double width, double height,
-                       double aspect, double corner_radius,
-                       double r, double g,
-                       double b, double a)
+                       double corner_radius)
 {
+    const double aspect = 1.0;
+
     double radius = corner_radius / aspect;
     double degrees = M_PI / 180.0;
 
@@ -27,31 +29,67 @@ void rounded_rectangle(cairo_t *context,
     cairo_arc(context, x + radius, y + height - radius, radius, 90 * degrees, 180 * degrees);
     cairo_arc(context, x + radius, y + radius, radius, 180 * degrees, 270 * degrees);
     cairo_close_path(context);
-
-    cairo_set_source_rgba(context, r, g, b, a);
-    cairo_fill(context);
 }
 
-void draw_panel(cairo_t *context, Color bd, Color bg, int x, int y, int w, int h, int bw)
+void draw_panel_fill(cairo_t *context, Color bd, Color bg, int x, int y, int w, int h, int bw)
 {
-    cairo_set_source_rgba(context, bd.red, bd.green, bd.blue ,bd.alpha);
-    cairo_rectangle(context, x, y, w, h);
-    cairo_fill(context);
+    if (opt.rounding) {
+        cairo_set_source_rgba(context, bd.red, bd.green, bd.blue ,bd.alpha);
+        rounded_rectangle(context, x, y, w, h, opt.rounding);
+        cairo_fill(context);
 
-    cairo_set_source_rgba(context, bg.red, bg.blue, bg.green, bg.alpha);
-    cairo_rectangle(context, x + bw, y + bw, w - bw*2, h - bw*2);
-    cairo_fill(context);
+        cairo_set_source_rgba(context, bg.red, bg.blue, bg.green, bg.alpha);
+        rounded_rectangle(context, x + bw, y + bw, w - bw*2, h - bw*2, opt.rounding);
+        cairo_fill(context);
+    } else {
+        cairo_set_source_rgba(context, bd.red, bd.green, bd.blue ,bd.alpha);
+        cairo_rectangle(context, x, y, w, h);
+        cairo_fill(context);
+
+        cairo_set_source_rgba(context, bg.red, bg.blue, bg.green, bg.alpha);
+        cairo_rectangle(context, x + bw, y + bw, w - bw*2, h - bw*2);
+        cairo_fill(context);
+    }
     //cairo_clip(context);
 }
 
-void draw_panel_shadow(cairo_t *context, Color c, int x, int y, int w, int h)
+void draw_panel_body_fill_preserve(cairo_t *context, Color c, int x, int y, int w, int h, int bw)
 {
-    //cairo_set_operator(context, CAIRO_OPERATOR_OVER);
-    cairo_set_source_rgba(context, c.red, c.green, c.blue, c.alpha);
-    //for (int i = 4; i > 0; i--) {
-    cairo_rectangle(context, x, y, w, h);
-    cairo_fill(context);
-    //}
+    if (opt.rounding) {
+        cairo_set_source_rgba(context, c.red, c.green, c.blue, c.alpha);
+        rounded_rectangle(context, x, y, w, h, opt.rounding);
+        cairo_fill_preserve(context);
+
+        /*
+        cairo_set_source_rgba(context, bg.red, bg.blue, bg.green, bg.alpha);
+        rounded_rectangle(context, x + bw, y + bw, w - bw*2, h - bw*2, 1.0, opt.rounding);
+        cairo_fill(context);
+        */
+    } else {
+        cairo_set_source_rgba(context, c.red, c.green, c.blue, c.alpha);
+        cairo_rectangle(context, x, y, w, h);
+        cairo_fill_preserve(context);
+
+        /*
+        cairo_set_source_rgba(context, bg.red, bg.blue, bg.green, bg.alpha);
+        cairo_rectangle(context, x + bw, y + bw, w - bw*2, h - bw*2);
+        cairo_fill(context);
+        */
+    }
+    //cairo_clip(context);
+}
+
+void draw_panel_shadow_fill(cairo_t *context, Color c, int x, int y, int w, int h)
+{
+    if (opt.rounding) {
+        cairo_set_source_rgba(context, c.red, c.green, c.blue, c.alpha);
+        rounded_rectangle(context, x, y, w, h, opt.rounding);
+        cairo_fill(context);
+    } else {
+        cairo_set_source_rgba(context, c.red, c.green, c.blue, c.alpha);
+        cairo_rectangle(context, x, y, w, h);
+        cairo_fill(context);
+    }
 }
 
 // Ease the transition between two numbers -> ""animation""

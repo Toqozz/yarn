@@ -39,7 +39,7 @@ parse_geometry(const char *wxh, int *xpos, int *ypos, int *width, int *height)
     *height = strtol(h, NULL, 10);
 
     // Free pointers after everything is done with it.
-    free(point);        // Points to dupe's old memory footprint?
+    free(point);        // Points to dupe's old memory?
     free(dupe);
 }
 
@@ -145,8 +145,6 @@ parse_quote_markup(const char *text)
     temp = repl_str(temp, "&und;", "<u>");
     temp = repl_str(temp, "&undc;", "</u>");
 
-    //printf("new string: %s\n", temp);
-
     return temp;
 }
 
@@ -155,7 +153,7 @@ int
 parse_offset_value(int value)
 {
     if (value < 0)
-        return abs(value);
+        return -value;
     else
         return 0;
 }

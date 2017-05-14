@@ -14,15 +14,16 @@ void
 rounded_rectangle (cairo_t *context,
                   double x, double y,
                   double width, double height,
-                  double aspect, double corner_radius,
-                  double r, double g,
-                  double b, double a);
+                  double corner_radius);
 
 void
-draw_panel(cairo_t *context, Color bd, Color bg, int x, int y, int w, int h, int bw);
+draw_panel_fill(cairo_t *context, Color bd, Color bg, int x, int y, int w, int h, int bw);
 
 void
-draw_panel_shadow(cairo_t *context, Color c, int x, int y, int w, int h);
+draw_panel_body_fill_preserve(cairo_t *context, Color c, int x, int y, int w, int h, int bw);
+
+void
+draw_panel_shadow_fill(cairo_t *context, Color c, int x, int y, int w, int h);
 
 int
 ease (int animation, int index, int curtime, double s, double e, double d);

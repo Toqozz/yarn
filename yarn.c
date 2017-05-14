@@ -56,11 +56,14 @@ notification_destroy(Notification *n)
 Message
 message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
 {
+    // Shadows have made this a bit annoying.
+    int xoffset = parse_offset_value(opt.shadow_xoffset),
+        yoffset = parse_offset_value(opt.shadow_yoffset) + (in_queue(queuespec) * (opt.height + opt.gap));
+
     Message m;
     char *summary = n->summary,
          *body = n->body;
 
-    printf("... %s - %s\n", summary, body);
     // Boop boop.
     summary = parse_strip_markup(summary);
     summary = parse_quote_markup(summary);
@@ -68,16 +71,14 @@ message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
     body = parse_strip_markup(body);
     body = parse_quote_markup(body);
 
-    printf("... %s - %s\n", summary, body);
-
     m.summary = strdup(summary);
     m.body = strdup(body);
     m.swidth = 0;
     m.bwidth = 0;
-    m.textx = textx;
-    m.texty = texty;
-    m.x = x;
-    m.y = y;
+    m.textx = textx + xoffset;
+    m.texty = texty + yoffset;
+    m.x = x + xoffset;
+    m.y = y + yoffset;
     m.fuse = fuse;
 
     m.redraw = 1;
@@ -102,19 +103,11 @@ void *
 run(void *arg)
 {
     Notification *n = (Notification*) arg;
-    // Shadows have made this a bit annoying.
-    int xoffset = parse_offset_value(opt.shadow_xoffset),
-        yoffset = parse_offset_value(opt.shadow_yoffset);
 
-    // string, text x, text y, x, y, fuse.
+    // notification struct, text x, text y, x, y, fuse.
     // These positions are based on the cairo surface, so it starts at 0 regardless of
     // the window's position on the screen.
-    Message message = message_create(n,             // Notification struct.
-                                     0 + xoffset,   // textx
-                                     in_queue(queuespec) * (opt.height + opt.gap) + yoffset,   // texty
-                                     0 + xoffset,   // x
-                                     in_queue(queuespec) * (opt.height + opt.gap) + yoffset,   // y
-                                     n->expire_timeout);  // fuse
+    Message message = message_create(n, 0, 0, 0, 0, n->expire_timeout);
     queue_insert(&queuespec, message);
     notification_destroy(n);
 
@@ -149,21 +142,13 @@ prepare(Notification *n)
 
         thread_alive = true;
     } else {
-        int xoffset = parse_offset_value(opt.shadow_xoffset),
-            yoffset = parse_offset_value(opt.shadow_yoffset);
-
         // Queue full, remove one first.
         if (queuespec.rear == opt.max_notifications) {
             queue_delete(&queuespec, 0);
             queue_align(queuespec);
         }
 
-        Message message = message_create(n,
-                                         0 + xoffset,
-                                         in_queue(queuespec) * (opt.height + opt.gap) + yoffset,
-                                         0 + xoffset,
-                                         in_queue(queuespec) * (opt.height + opt.gap) + yoffset,
-                                         n->expire_timeout);
+        Message message = message_create(n, 0, 0, 0, 0, n->expire_timeout);
 
         queue_insert(&queuespec, message);
         notification_destroy(n);

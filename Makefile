@@ -1,4 +1,4 @@
-CC=gcc
+CC=clang
 BEFORE=`pkg-config --cflags dbus-glib-1` \
 	`pkg-config --cflags dbus-1` \
 	`pkg-config --cflags glib-2.0` \
