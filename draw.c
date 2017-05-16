@@ -83,6 +83,7 @@ draw_redraw(Toolbox box)
     int i;
     for (i = 0; i < in_queue(queuespec); i++)
     {
+        cairo_set_operator(box.ctx, CAIRO_OPERATOR_SOURCE);
 
         pango_layout_set_markup(box.lyt, MessageArray[i].summary, -1);
         pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
