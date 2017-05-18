@@ -73,7 +73,9 @@ cfg_read(config_t cfg, char *file, Config *c)
         config_setting_lookup_float(setting, "timeout", &c->timeout);
 
         config_setting_lookup_int(setting, "scroll_speed", &c->scroll_speed);
-        config_setting_lookup_int(setting, "margin", &c->margin);
+        config_setting_lookup_int(setting, "lmargin", &c->lmargin);
+        config_setting_lookup_int(setting, "mmargin", &c->mmargin);
+        config_setting_lookup_int(setting, "rmargin", &c->rmargin);
         config_setting_lookup_int(setting, "overline", &c->overline);
         config_setting_lookup_int(setting, "bw", &c->bw);
 
@@ -144,7 +146,9 @@ cfg_assign(Config *c)
     opt.timeout = c->timeout;
 
     opt.scroll_speed = c->scroll_speed;
-    opt.margin = c->margin;
+    opt.lmargin = c->lmargin;
+    opt.mmargin = c->mmargin;
+    opt.rmargin = c->rmargin;
     opt.overline = c->overline;
     opt.bw = c->bw;
     opt.rounding = c->rounding;

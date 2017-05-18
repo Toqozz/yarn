@@ -52,6 +52,7 @@ draw_check_fuses(void)
     }
 }
 
+/* Initialise a set of cairo "objects" to use as tools. */
 void
 draw_setup_toolbox(Toolbox *t)
 {
@@ -72,49 +73,74 @@ draw_setup_toolbox(Toolbox *t)
     pango_layout_set_ellipsize(t->lyt, PANGO_ELLIPSIZE_END);
 }
 
+/* Get some useful variables for the message and calculate some helper things. */
+void
+draw_setup_message(Message *m, Toolbox box) {
+    pango_layout_set_markup(box.lyt, m->body, -1);
+    pango_layout_set_width(box.lyt, opt.body_width*PANGO_SCALE);
+    pango_layout_get_pixel_extents(box.lyt, &box.bextents, NULL);
+    m->bwidth = box.bextents.width;
+
+    pango_layout_set_markup(box.lyt, m->summary, -1);
+    pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
+    pango_layout_get_pixel_extents(box.lyt, &box.sextents, NULL);
+    m->swidth = box.sextents.width;
+
+    m->total_bw = opt.bw * 2;
+    m->total_swidth = opt.lmargin + m->swidth;
+    m->total_bwidth = (((opt.width - m->total_bw) - m->total_swidth) - opt.mmargin) - opt.rmargin;
+    m->bwidth_startx = m->x + opt.bw + m->total_swidth + opt.mmargin;
+    m->bwidth_starty = m->texty + opt.overline;
+}
+
+/* Redraw the "backgrounds" of all notifications -- useful when changing locations/coordinates, and things like that. */
 void
 draw_redraw(Toolbox box)
 {
     // If we need to redraw, clear the surface and redraw notifications.
     draw_clear_surface(box.ctx);
 
+    // It's possible that more messages get added while we're running this, and we don't want to set redraw to 0 before it draws.
     pthread_mutex_lock(&lock);
 
     int i;
     for (i = 0; i < in_queue(queuespec); i++)
     {
+        // Set text dimensions and calculate some helper things ^.
+        draw_setup_message(&MessageArray[i], box);
+
+        // Draw the shadow first, so we can draw over it.
         cairo_set_operator(box.ctx, CAIRO_OPERATOR_SOURCE);
-
-        pango_layout_set_markup(box.lyt, MessageArray[i].summary, -1);
-        pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
-        // Pixel extents are much better for this purpose.
-        pango_layout_get_pixel_extents(box.lyt, &box.sextents, NULL);
-        MessageArray[i].swidth = box.sextents.width;
-
         draw_panel_shadow_fill(box.ctx, opt.shadow_color,
                 MessageArray[i].x + opt.shadow_xoffset,
                 MessageArray[i].y + opt.shadow_yoffset,
                 opt.width, opt.height);
+
+        // Draw the panel (borders included).
         draw_panel_fill(box.ctx, opt.bdcolor, opt.bgcolor, MessageArray[i].x, MessageArray[i].y, opt.width, opt.height, opt.bw);
 
+        // Draw the summary (it never changes).
         pango_layout_set_markup(box.lyt, MessageArray[i].summary, -1);
         pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
         cairo_set_source_rgba(box.ctx, opt.summary_color.red, opt.summary_color.green, opt.summary_color.blue, opt.summary_color.alpha);
-        cairo_move_to(box.ctx, MessageArray[i].x + opt.margin + opt.bw, MessageArray[i].texty + opt.overline);
+        cairo_move_to(box.ctx, MessageArray[i].x + opt.lmargin + opt.bw, MessageArray[i].texty + opt.overline);
         pango_cairo_show_layout(box.ctx, box.lyt);
 
-        MessageArray[i].redraw = 0;
+        // Draw the body portion.
+        draw_panel_body_fill(box.ctx, opt.bgcolor, MessageArray[i].bwidth_startx, MessageArray[i].y + opt.bw,
+                MessageArray[i].total_bwidth, opt.height-opt.bw*2, opt.rounding);
 
+        // Don't do this again until we should.
+        MessageArray[i].redraw = 0;
     }
 
     pthread_mutex_unlock(&lock);
 
-    //TODO resize window with ...
+    //TODO resize window? with ...
     //gotta change opt.width and stuff so its easy.
     // Resize the window.
     //x_resize_window()
     //cairo_xlib_surface_get_drawable(sfc);
-
 }
 
 /* Clear surface to a blank/fresh state */
@@ -133,12 +159,14 @@ draw_clear_surface(cairo_t *context)
 void
 draw(void)
 {
+    int i;
     Toolbox box;
     draw_setup_toolbox(&box);
 
-    int running, i;
+    int running;
     for (running = 1; running == 1;)
     {
+        // TODO, could have a separate flag for first draw, if you wanna be really efficient.
         for (int i = 0; i < in_queue(queuespec); i++) {
             if (MessageArray[i].redraw) {
                 draw_redraw(box);
@@ -149,30 +177,26 @@ draw(void)
         // Draw body text in each panel.
         for (i = 0; i < in_queue(queuespec); i++)
         {
-            // TODO, opt.margin*3, add option for the *3 or have a separate option probably.
             // Progress the text if it has not reached the end yet.
-            MessageArray[i].textx < (((opt.width - opt.bw*2) - MessageArray[i].swidth) - opt.margin*3) ? MessageArray[i].textx++ : false;
+            MessageArray[i].textx < MessageArray[i].total_bwidth ? MessageArray[i].textx++ : false;
 
             // Make sure that we dont draw out of the box after this point.
             cairo_save(box.ctx);
 
-            // TODO, why does this unround during loops?
+            // Set the text & get its bounds.
+            pango_layout_set_markup(box.lyt, MessageArray[i].body, -1);
+            pango_layout_set_width(box.lyt, opt.body_width*PANGO_SCALE);
+            pango_layout_get_pixel_extents(box.lyt, &box.bextents, NULL);
+
             cairo_set_operator(box.ctx, CAIRO_OPERATOR_SOURCE);
-            draw_panel_body_fill_preserve(box.ctx, opt.bgcolor, MessageArray[i].x + (4*opt.margin) + MessageArray[i].swidth + opt.bw,
-                    MessageArray[i].y + opt.bw, ((opt.width - opt.bw*2) - opt.margin*4) - MessageArray[i].swidth, opt.height-opt.bw*2, opt.rounding);
-            //cairo_rectangle(box.ctx, MessageArray[i].x + (4*opt.margin) + MessageArray[i].swidth + opt.bw,
-                    //MessageArray[i].y + opt.bw,
-                    //((opt.width - opt.bw*2) - opt.margin*4) - MessageArray[i].swidth,
-                    //opt.height-opt.bw*2);
-            //cairo_set_source_rgba(box.ctx, opt.bgcolor.red, opt.bgcolor.green, opt.bgcolor.blue, opt.bgcolor.alpha);
-            //cairo_fill_preserve(box.ctx);
+            // TODO, move box.bextents to message perhaps.
+            cairo_rectangle(box.ctx, MessageArray[i].bwidth_startx, MessageArray[i].bwidth_starty, MessageArray[i].total_bwidth, box.bextents.height);
+            cairo_fill_preserve(box.ctx);
             cairo_clip(box.ctx);
 
             // Push the body to the soure.
-            pango_layout_set_markup(box.lyt, MessageArray[i].body, -1);
-            pango_layout_set_width(box.lyt, opt.body_width*PANGO_SCALE);
             cairo_set_source_rgba(box.ctx, opt.body_color.red, opt.body_color.green, opt.body_color.blue, opt.body_color.alpha);
-            cairo_move_to(box.ctx, (opt.width - MessageArray[i].textx), MessageArray[i].texty + opt.overline); //TODO, overline can be baked into texty
+            cairo_move_to(box.ctx, (opt.width - MessageArray[i].textx), MessageArray[i].bwidth_starty);
             pango_cairo_show_layout(box.ctx, box.lyt);
 
             // We should be able to draw out of the box next time.

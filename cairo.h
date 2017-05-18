@@ -20,7 +20,7 @@ void
 draw_panel_fill(cairo_t *context, Color bd, Color bg, int x, int y, int w, int h, int bw);
 
 void
-draw_panel_body_fill_preserve(cairo_t *context, Color c, int x, int y, int w, int h, int bw);
+draw_panel_body_fill(cairo_t *context, Color c, int x, int y, int w, int h, int bw);
 
 void
 draw_panel_shadow_fill(cairo_t *context, Color c, int x, int y, int w, int h);

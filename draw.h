@@ -8,10 +8,13 @@ void
 draw_check_fuses(void);
 
 void
-draw_redraw(Toolbox box);
+draw_setup_toolbox(Toolbox *box);
 
 void
-draw_setup_toolbox(Toolbox *box);
+draw_setup_message(Message *m, Toolbox box);
+
+void
+draw_redraw(Toolbox box);
 
 void
 draw_clear_surface(cairo_t *context);

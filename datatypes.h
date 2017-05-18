@@ -10,6 +10,7 @@ typedef struct Toolbox {
     PangoLayout          *lyt;
     PangoFontDescription *dsc;
     PangoRectangle        sextents;
+    PangoRectangle        bextents;
 } Toolbox;
 
 typedef struct Color {
@@ -61,7 +62,9 @@ typedef struct Config {
     double rounding;
 
     int scroll_speed;
-    int margin;
+    int lmargin;
+    int mmargin;
+    int rmargin;
     int overline;
     int bw;
 } Config;
@@ -69,13 +72,20 @@ typedef struct Config {
 typedef struct Message {
     char *summary;
     char *body;
-    int   swidth;  // kind of ugly to discard the height... but why would we need it?
-    int   bwidth;  // checking..? maybe... or leave this up to the user.
+    int   swidth;
+    int   bwidth;
     int   textx;
     int   texty;
     int   x;
     int   y;
     int   redraw;
+
+    int   total_bw;
+    int   total_swidth;
+    int   total_bwidth;
+    int   bwidth_startx;
+    int   bwidth_starty;
+
     long double fuse;
 } Message;
 
@@ -108,7 +118,9 @@ typedef struct Variables {
     double rounding;
 
     int   scroll_speed;
-    int   margin;
+    int   lmargin;
+    int   mmargin;
+    int   rmargin;
     int   overline;
     int   bw;
 } Variables;

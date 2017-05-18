@@ -53,12 +53,12 @@ void draw_panel_fill(cairo_t *context, Color bd, Color bg, int x, int y, int w, 
     //cairo_clip(context);
 }
 
-void draw_panel_body_fill_preserve(cairo_t *context, Color c, int x, int y, int w, int h, int bw)
+void draw_panel_body_fill(cairo_t *context, Color c, int x, int y, int w, int h, int bw)
 {
     if (opt.rounding) {
         cairo_set_source_rgba(context, c.red, c.green, c.blue, c.alpha);
         rounded_rectangle(context, x, y, w, h, opt.rounding);
-        cairo_fill_preserve(context);
+        cairo_fill(context);
 
         /*
         cairo_set_source_rgba(context, bg.red, bg.blue, bg.green, bg.alpha);
@@ -68,7 +68,7 @@ void draw_panel_body_fill_preserve(cairo_t *context, Color c, int x, int y, int 
     } else {
         cairo_set_source_rgba(context, c.red, c.green, c.blue, c.alpha);
         cairo_rectangle(context, x, y, w, h);
-        cairo_fill_preserve(context);
+        cairo_fill(context);
 
         /*
         cairo_set_source_rgba(context, bg.red, bg.blue, bg.green, bg.alpha);
