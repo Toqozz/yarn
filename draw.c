@@ -88,6 +88,7 @@ draw_setup_message(Message *m, Toolbox box) {
 
     m->total_bw = opt.bw * 2;
     m->total_swidth = opt.lmargin + m->swidth;
+    m->total_bheight = opt.height - m->total_bw;
     m->total_bwidth = (((opt.width - m->total_bw) - m->total_swidth) - opt.mmargin) - opt.rmargin;
     m->bwidth_startx = m->x + opt.bw + m->total_swidth + opt.mmargin;
     m->bwidth_starty = m->texty + opt.overline;
@@ -185,12 +186,12 @@ draw(void)
 
             // Set the text & get its bounds.
             pango_layout_set_markup(box.lyt, MessageArray[i].body, -1);
-            pango_layout_set_width(box.lyt, opt.body_width*PANGO_SCALE);
+            pango_layout_set_width(box.lyt, MessageArray[i].total_bwidth*PANGO_SCALE);
             pango_layout_get_pixel_extents(box.lyt, &box.bextents, NULL);
 
             cairo_set_operator(box.ctx, CAIRO_OPERATOR_SOURCE);
             // TODO, move box.bextents to message perhaps.
-            cairo_rectangle(box.ctx, MessageArray[i].bwidth_startx, MessageArray[i].bwidth_starty, MessageArray[i].total_bwidth, box.bextents.height);
+            cairo_rectangle(box.ctx, MessageArray[i].bwidth_startx, MessageArray[i].bwidth_starty, MessageArray[i].total_bwidth, MessageArray[i].total_bheight);
             cairo_fill_preserve(box.ctx);
             cairo_clip(box.ctx);
 

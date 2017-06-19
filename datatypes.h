@@ -81,6 +81,7 @@ typedef struct Message {
     int   redraw;
 
     int   total_bw;
+    int   total_bheight;
     int   total_swidth;
     int   total_bwidth;
     int   bwidth_startx;
