@@ -31,6 +31,7 @@ static bool thread_alive = false;
 void
 notify_setup(Notification *n)
 {
+    // TODO, is there a way to handle "show forever"?
     if (n->expire_timeout <= 0)
         n->expire_timeout = opt.timeout;
 }
