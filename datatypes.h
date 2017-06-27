@@ -3,6 +3,7 @@
 
 #include <cairo-xlib.h>
 #include <pango/pangocairo.h>
+#include <time.h>
 
 typedef struct Toolbox {
     cairo_t              *ctx;
@@ -113,6 +114,8 @@ typedef struct Variables {
     Color bdcolor;
 
     const char *font;
+
+    struct timespec tspec;
 
     double interval;
     double timeout;

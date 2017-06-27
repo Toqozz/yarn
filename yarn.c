@@ -65,11 +65,11 @@ message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
          *body = n->body;
 
     // Boop boop.
-    summary = parse_strip_markup(summary);
-    summary = parse_quote_markup(summary);
+    summary = parse_quote_markup(parse_strip_markup(summary));
+    //summary = parse_quote_markup(summary);
 
-    body = parse_strip_markup(body);
-    body = parse_quote_markup(body);
+    body = parse_quote_markup(parse_strip_markup(body));
+    //body = parse_quote_markup(body);
 
     m.summary = strdup(summary);
     m.body = strdup(body);
@@ -120,6 +120,7 @@ run(void *arg)
     pthread_exit(NULL);
 }
 
+/* Prepare and decide before pushing a notification to the queue / starting a new thread */
 void
 prepare(Notification *n)
 {

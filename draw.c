@@ -25,17 +25,17 @@
 // Interval = 33 = 30fps.
 #define INTERVAL 33
 
+extern Variables opt;
+extern pthread_mutex_t lock;
 // Nanosleep helper.
-struct timespec req = {0, INTERVAL*1000000};
+//extern timespec req;// = {0, opt.interval*1000000};
+
 
 /* The queuespec and MessageArray are global so that they can be
  * accessed easily by different threads.
  * The queue is an essential part of yarn. */
 Queue queuespec = { 0, -1 };
 Message MessageArray[QUEUESIZE] = { NULL };
-extern Variables opt;
-
-extern pthread_mutex_t lock;
 
 /* Check on each message's timeouts and delete burnt ones from the queue */
 void
@@ -44,7 +44,7 @@ draw_check_fuses(void)
     for (int i = 0; i < queuespec.rear; i++)
     {
         //printf("Fuse: %Lf, Taking away: %f\n", MessageArray[i].fuse, (double) INTERVAL/1000);
-        MessageArray[i].fuse = MessageArray[i].fuse - (double)INTERVAL/1000.0;
+        MessageArray[i].fuse = MessageArray[i].fuse - opt.interval/1000.0;
         if (MessageArray[i].fuse <= 0) {
             queue_delete(&queuespec, i);
             queue_align(queuespec);
@@ -62,6 +62,7 @@ draw_setup_toolbox(Toolbox *t)
     // Figure out where exactly the surface needs to be positioned (can change with different shadow geometry).
     int xpos = opt.xpos + (opt.shadow_xoffset < 0 ? opt.shadow_xoffset : 0);
     int ypos = opt.ypos + (opt.shadow_yoffset < 0 ? opt.shadow_yoffset : 0);
+
 
     t->sfc = cairo_create_x11_surface(xpos, ypos, width, height);
     t->ctx = cairo_create(t->sfc);
@@ -237,7 +238,7 @@ draw(void)
         }
 
         // Finally sleep ("animation").
-        nanosleep(&req, &req);
+        nanosleep(&opt.tspec, &opt.tspec);
     }
 
     // Destroy once done.
