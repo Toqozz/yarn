@@ -79,6 +79,7 @@ typedef struct Message {
     int   texty;
     int   x;
     int   y;
+    int   step;
     int   redraw;
 
     int   total_bw;

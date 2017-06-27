@@ -23,7 +23,7 @@
 #include "queue.h"
 
 // Interval = 33 = 30fps.
-#define INTERVAL 33
+#define INTERVAL_BASELINE 33
 
 extern Variables opt;
 extern pthread_mutex_t lock;
@@ -77,6 +77,9 @@ draw_setup_toolbox(Toolbox *t)
 /* Get some useful variables for the message and calculate some helper things. */
 void
 draw_setup_message(Message *m, Toolbox box) {
+    // TODO; different settings for different types of messages?
+    m->step = (opt.interval / INTERVAL_BASELINE) * opt.scroll_speed;
+
     pango_layout_set_markup(box.lyt, m->body, -1);
     pango_layout_set_width(box.lyt, opt.body_width*PANGO_SCALE);
     pango_layout_get_pixel_extents(box.lyt, &box.bextents, NULL);
@@ -180,7 +183,8 @@ draw(void)
         for (i = 0; i < in_queue(queuespec); i++)
         {
             // Progress the text if it has not reached the end yet.
-            MessageArray[i].textx < MessageArray[i].total_bwidth ? MessageArray[i].textx++ : false;
+            MessageArray[i].textx < MessageArray[i].total_bwidth ?
+                MessageArray[i].textx += MessageArray[i].step : false;
 
             // Make sure that we dont draw out of the box after this point.
             cairo_save(box.ctx);
