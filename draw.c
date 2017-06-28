@@ -135,6 +135,11 @@ draw_redraw(Toolbox box)
         MessageArray[i].redraw = 0;
     }
 
+    //int width = opt.width + abs(opt.shadow_xoffset);
+    //int height = ((opt.height * opt.max_notifications) + (opt.gap * (opt.max_notifications - 1)) + abs(opt.shadow_yoffset));
+
+    //x_resize_window(box.sfc, width, ((opt.height * in_queue(queuespec)) + (opt.gap * (in_queue(queuespec) - 1)) + abs(opt.shadow_yoffset)));
+
     pthread_mutex_unlock(&lock);
 
     //TODO resize window? with ...
