@@ -23,19 +23,19 @@
 #include "queue.h"
 
 // Interval = 33 = 30fps.
-#define INTERVAL 33
+#define INTERVAL_BASELINE 33
 
+extern Variables opt;
+extern pthread_mutex_t lock;
 // Nanosleep helper.
-struct timespec req = {0, INTERVAL*1000000};
+//extern timespec req;// = {0, opt.interval*1000000};
+
 
 /* The queuespec and MessageArray are global so that they can be
  * accessed easily by different threads.
  * The queue is an essential part of yarn. */
 Queue queuespec = { 0, -1 };
 Message MessageArray[QUEUESIZE] = { NULL };
-extern Variables opt;
-
-extern pthread_mutex_t lock;
 
 /* Check on each message's timeouts and delete burnt ones from the queue */
 void
@@ -44,7 +44,7 @@ draw_check_fuses(void)
     for (int i = 0; i < queuespec.rear; i++)
     {
         //printf("Fuse: %Lf, Taking away: %f\n", MessageArray[i].fuse, (double) INTERVAL/1000);
-        MessageArray[i].fuse = MessageArray[i].fuse - (double)INTERVAL/1000.0;
+        MessageArray[i].fuse = MessageArray[i].fuse - opt.interval/1000.0;
         if (MessageArray[i].fuse <= 0) {
             queue_delete(&queuespec, i);
             queue_align(queuespec);
@@ -63,6 +63,7 @@ draw_setup_toolbox(Toolbox *t)
     int xpos = opt.xpos + (opt.shadow_xoffset < 0 ? opt.shadow_xoffset : 0);
     int ypos = opt.ypos + (opt.shadow_yoffset < 0 ? opt.shadow_yoffset : 0);
 
+
     t->sfc = cairo_create_x11_surface(xpos, ypos, width, height);
     t->ctx = cairo_create(t->sfc);
     t->lyt = pango_cairo_create_layout(t->ctx);
@@ -76,6 +77,9 @@ draw_setup_toolbox(Toolbox *t)
 /* Get some useful variables for the message and calculate some helper things. */
 void
 draw_setup_message(Message *m, Toolbox box) {
+    // TODO; different settings for different types of messages?
+    m->step = (opt.interval / INTERVAL_BASELINE) * opt.scroll_speed;
+
     pango_layout_set_markup(box.lyt, m->body, -1);
     pango_layout_set_width(box.lyt, opt.body_width*PANGO_SCALE);
     pango_layout_get_pixel_extents(box.lyt, &box.bextents, NULL);
@@ -184,7 +188,8 @@ draw(void)
         for (i = 0; i < in_queue(queuespec); i++)
         {
             // Progress the text if it has not reached the end yet.
-            MessageArray[i].textx < MessageArray[i].total_bwidth ? MessageArray[i].textx++ : false;
+            MessageArray[i].textx < MessageArray[i].total_bwidth ?
+                MessageArray[i].textx += MessageArray[i].step : false;
 
             // Make sure that we dont draw out of the box after this point.
             cairo_save(box.ctx);
@@ -242,7 +247,7 @@ draw(void)
         }
 
         // Finally sleep ("animation").
-        nanosleep(&req, &req);
+        nanosleep(&opt.tspec, &opt.tspec);
     }
 
     // Destroy once done.

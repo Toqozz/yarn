@@ -7,6 +7,8 @@
 #include "datatypes.h"
 #include "parse.h"
 
+#define NANO_SECOND_MULTIPLIER 1000000
+
 extern Variables opt;
 
 Config
@@ -141,6 +143,9 @@ cfg_assign(Config *c)
     opt.bdcolor = parse_hex_to_rgba(c->bdcolor);
 
     opt.font = c->font;
+
+    opt.tspec.tv_sec = 0;
+    opt.tspec.tv_nsec = c->interval * NANO_SECOND_MULTIPLIER;
 
     opt.interval = c->interval;
     opt.timeout = c->timeout;

@@ -39,7 +39,7 @@ parse_geometry(const char *wxh, int *xpos, int *ypos, int *width, int *height)
     *height = strtol(h, NULL, 10);
 
     // Free pointers after everything is done with it.
-    free(point);        // Points to dupe's old memory?
+    free(point);        // Points to dupe's initial pointer.
     free(dupe);
 }
 
