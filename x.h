@@ -17,9 +17,9 @@ int
 check_x_event(cairo_surface_t *sfc, int *position, int block);
 
 void
-x_resize_window(Display *dsp, Window win, int x, int y);
+x_resize_window(cairo_surface_t *sfc, int x, int y);
 
 void
-yarn_destroy(Toolbox box);
+yarn_destroy(Toolbox t);
 
 #endif

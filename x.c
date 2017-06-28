@@ -134,14 +134,17 @@ check_x_event(cairo_surface_t *sfc, int *position, int block)
 }
 
 void
-x_resize_window(Display *dsp, Window win, int x, int y)
+x_resize_window(cairo_surface_t *sfc, int x, int y)
 {
+    Display *dsp = cairo_xlib_surface_get_display(sfc);
+    Window draw = cairo_xlib_surface_get_drawable(sfc);
+
     XWindowChanges values;
 
     values.width = x;
     values.height = y;
 
-    XConfigureWindow(dsp, win, CWWidth | CWHeight, &values);
+    XConfigureWindow(dsp, draw, CWWidth | CWHeight, &values);
 }
 
 /* Destroy all the window related stuff.
