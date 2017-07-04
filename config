@@ -11,7 +11,7 @@ gap = 7;
 notification:
 {
     // Dimensions in the format of wxh+x+y:
-    geometry = "300x23+1928+7";
+    geometry = "300x23+1927+7";
 
     // Shadow offsets.  (use negative values if you want)
     shadow = 1;
@@ -20,7 +20,9 @@ notification:
 
     // Max summary length (in pixels).  Summary will be elipsed if it is longer than this.
     summary_width = 70;
-    body_width = 250;
+    body_width = 230;
+
+    // The area that the body text occupies.
 
     // Colors in #AARRGGBB format;
     summary_color = "#FFebdbb2";
@@ -30,7 +32,8 @@ notification:
     bdcolor = "#FFebdbb2";
 
     // Font.
-    font = "GohuFont 11";
+    font = "Operator Mono Book 10";
+    //font_body = "Operator Mono Book 10";
 
     // Markup for the summary.
     summary_markup = "<b> %s </b>"
@@ -47,16 +50,22 @@ notification:
     timeout = 10.0;
 
     // Rounding around the edges of a notification. (higehr number means more rounding).
-    rounding = 0.0;
+    rounding = 3.0;
 
     // Speed at which text scrolls across the screen. (pixels per second?)
-    scroll_speed = 5;
+    scroll_speed = 1;
 
-    // Margin.
-    margin = 2;
+    // Left Margin (summary distance from left side of border)
+    lmargin = 2;
+
+    // Mid Margin (body distance from the summary, or where the body will stop at)
+    mmargin = 4;
+
+    // Right margin (how far the text is cut from the right side of the border)
+    rmargin = 4;
 
     // Upper margin.
-    overline = 4;
+    overline = 3;
 
     // Border thickness.
     bw = 3;
