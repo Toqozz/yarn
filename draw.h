@@ -5,7 +5,13 @@
 #include "datatypes.h"
 
 void
+sighup_handler(int signum);
+
+void
 draw_check_fuses(void);
+
+void
+draw_cleanup(void);
 
 void
 draw_setup_toolbox(Toolbox *box);

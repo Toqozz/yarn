@@ -149,7 +149,7 @@ x_resize_window(cairo_surface_t *sfc, int x, int y)
 
 /* Destroy all the window related stuff.
  * (drawing, font, window) */
-void
+int
 yarn_destroy(Toolbox t)
 {
     Display *dsp = cairo_xlib_surface_get_display(t.sfc);
@@ -163,5 +163,7 @@ yarn_destroy(Toolbox t)
     XCloseDisplay(dsp);
 
     cairo_surface_destroy(t.sfc);
+
+    return 0;
     //cairo_debug_reset_static_data();
 }

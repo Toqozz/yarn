@@ -14,6 +14,7 @@
 #include <time.h>
 #include <math.h>
 #include <assert.h>
+#include <signal.h>
 
 #include "draw.h"
 #include "datatypes.h"
@@ -37,18 +38,40 @@ extern pthread_mutex_t lock;
 Queue queuespec = { 0, -1 };
 Message MessageArray[QUEUESIZE] = { NULL };
 
-/* Check on each message's timeouts and delete burnt ones from the queue */
+// Used to safely stop execution of the thread when we want to.
+volatile int running;
+
+/* Handle the SIGHUP signal (used by systemd unit especially) */
 void
-draw_check_fuses(void)
-{
-    for (int i = 0; i < queuespec.rear; i++)
-    {
+sighup_handler(int signum) {
+    write(1, "Caught signal SIGHUP, cleaning up and closing.\n", 47);
+
+    // Stop drawing, and close the thread naturally.
+    // TODO, what if someone uses an exceptionally long interval (longer than 1 second?);
+    running = 0;
+    sleep(1);
+
+    // Exit process.
+    exit(0);
+}
+
+/* Check on each message's timeouts and delete burnt ones from the queue. */
+void
+draw_check_fuses(void) {
+    for (int i = 0; i < in_queue(queuespec); i++) {
         //printf("Fuse: %Lf, Taking away: %f\n", MessageArray[i].fuse, (double) INTERVAL/1000);
         MessageArray[i].fuse = MessageArray[i].fuse - opt.interval/1000.0;
-        if (MessageArray[i].fuse <= 0) {
+        if (MessageArray[i].fuse <= 0)
             queue_delete(&queuespec, i);
-            queue_align(queuespec);
         }
+
+    queue_align(queuespec);
+}
+
+void
+draw_cleanup(void) {
+    for (int i = 0; i < in_queue(queuespec); i++) {
+        queue_delete(&queuespec, i);
     }
 }
 
@@ -170,14 +193,15 @@ void
 draw(void)
 {
     int i;
+    running = 1;
+
     Toolbox box;
     draw_setup_toolbox(&box);
 
-    int running;
     for (running = 1; running == 1;)
     {
         // TODO, could have a separate flag for first draw, if you wanna be really efficient.
-        for (int i = 0; i < in_queue(queuespec); i++) {
+        for (i = 0; i < in_queue(queuespec); i++) {
             if (MessageArray[i].redraw) {
                 draw_redraw(box);
                 break;
@@ -252,4 +276,7 @@ draw(void)
 
     // Destroy once done.
     yarn_destroy(box);
+
+    // Most of the time, this won't do anything -- but its best to be safe. (signals, mainly).
+    draw_cleanup();
 }
