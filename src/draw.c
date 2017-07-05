@@ -36,7 +36,7 @@ extern pthread_mutex_t lock;
  * accessed easily by different threads.
  * The queue is an essential part of yarn. */
 Queue queuespec = { 0, -1 };
-Message MessageArray[QUEUESIZE] = { NULL };
+Message MessageArray[QUEUESIZE] = {{NULL}};
 
 // Used to safely stop execution of the thread when we want to.
 volatile int running;

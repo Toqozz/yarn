@@ -1,0 +1,11 @@
+[Unit]
+Description=yarn notification daemon
+PartOf=graphical-session.target
+
+[Service]
+Type=dbus
+BusName=org.freedesktop.Notifications
+ExecStart=/usr/bin/yarn
+
+[Install]
+WantedBy=default.target
