@@ -144,6 +144,7 @@ prepare(Notification *n)
 
         thread_alive = true;
     } else {
+        pthread_mutex_lock(&lock);
         // Queue full, remove one first.
         if (queuespec.rear == opt.max_notifications) {
             queue_delete(&queuespec, 0);
@@ -153,6 +154,9 @@ prepare(Notification *n)
         Message message = message_create(n, 0, 0, 0, 0, n->expire_timeout);
 
         queue_insert(&queuespec, message);
+
+        pthread_mutex_unlock(&lock);
+
         notification_destroy(n);
     }
 }

@@ -129,7 +129,7 @@ draw_redraw(Toolbox box)
     draw_clear_surface(box.ctx);
 
     // It's possible that more messages get added while we're running this, and we don't want to set redraw to 0 before it draws.
-    pthread_mutex_lock(&lock);
+    //pthread_mutex_lock(&lock);
 
     int i;
     for (i = 0; i < in_queue(queuespec); i++)
@@ -167,7 +167,7 @@ draw_redraw(Toolbox box)
 
     //x_resize_window(box.sfc, width, ((opt.height * in_queue(queuespec)) + (opt.gap * (in_queue(queuespec) - 1)) + abs(opt.shadow_yoffset)));
 
-    pthread_mutex_unlock(&lock);
+    //pthread_mutex_unlock(&lock);
 
     //TODO resize window? with ...
     //gotta change opt.width and stuff so its easy.
@@ -200,7 +200,8 @@ draw(void)
 
     for (running = 1; running == 1;)
     {
-        // TODO, could have a separate flag for first draw, if you wanna be really efficient.
+        // Lock so that the message array does not get changed within an iteration of this loop.
+        pthread_mutex_lock(&lock);
         for (i = 0; i < in_queue(queuespec); i++) {
             if (MessageArray[i].redraw) {
                 draw_redraw(box);
@@ -269,6 +270,8 @@ draw(void)
         if (in_queue(queuespec) == 0) {
             running = 0;
         }
+
+        pthread_mutex_unlock(&lock);
 
         // Finally sleep ("animation").
         nanosleep(&opt.tspec, &opt.tspec);

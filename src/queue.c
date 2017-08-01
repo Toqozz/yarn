@@ -46,12 +46,10 @@ queue_delete(Queue *queuespec, int position)
     // Move each item down one.
     // Make sure we don't FUCK anything up, use mutexs, even though this shouldn't be run in parallel.
     else {
-        pthread_mutex_lock(&lock);
         message_destroy(&MessageArray[position]);
         for (i = position; i < queuespec->rear-1; i++)
             MessageArray[i] = MessageArray[i+1];
         queuespec->rear--;
-        pthread_mutex_unlock(&lock);
     }
 }
 
@@ -74,13 +72,11 @@ queue_align(Queue queuespec)
     */
 
     // Change locations to where they should be and then redraw.
-    pthread_mutex_lock(&lock);
     for (int i = 0; i < in_queue(queuespec); i++) {
         MessageArray[i].y = i * gap + yoffset;
         MessageArray[i].texty = i * gap + yoffset;
         MessageArray[i].redraw = 1;
     }
-    pthread_mutex_unlock(&lock);
 }
 
 /* Simply return the amount of items in the queue. */
