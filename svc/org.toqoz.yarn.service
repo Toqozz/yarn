@@ -1,4 +1,4 @@
 [D-BUS Service]
 Name=org.freedesktop.Notifications
-Exec=/usr/bin/yarn
+Exec=/usr/local/bin/yarn
 SystemdService=yarn.service

@@ -5,6 +5,8 @@
 #include <pango/pangocairo.h>
 #include <time.h>
 
+typedef enum { DEAD, ALIVE } ThreadState;
+
 typedef struct Toolbox {
     cairo_t              *ctx;
     cairo_surface_t      *sfc;

@@ -25,7 +25,7 @@ pthread_attr_t tattr;
 extern Queue queuespec;
 extern Variables opt;
 
-static bool thread_alive = false;
+static int thread_alive = DEAD;
 
 /* Initialize some variables etc */
 void
@@ -113,10 +113,10 @@ run(void *arg)
     notification_destroy(n);
 
     // Draw...
-    draw();
+    draw(&thread_alive);
 
     // When draw finishes we're done.
-    thread_alive = false;
+    //thread_alive = false;
 
     pthread_exit(NULL);
 }
@@ -131,7 +131,7 @@ prepare(Notification *n)
 
     // If there aren't any notifications being shown, we need to create a new thread.
     // If there are notifications being shown, simply add the new notification to the queue.
-    if (thread_alive == false) {
+    if (thread_alive == DEAD) {
         // Detached threads because we never want to join to them.
         pthread_attr_init(&tattr);
         pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
@@ -142,7 +142,7 @@ prepare(Notification *n)
             return;
         }
 
-        thread_alive = true;
+        thread_alive = ALIVE;
     } else {
         pthread_mutex_lock(&lock);
         // Queue full, remove one first.

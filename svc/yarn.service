@@ -5,7 +5,7 @@ PartOf=graphical-session.target
 [Service]
 Type=dbus
 BusName=org.freedesktop.Notifications
-ExecStart=/usr/bin/yarn
+ExecStart=/usr/local/bin/yarn
 
 [Install]
 WantedBy=default.target

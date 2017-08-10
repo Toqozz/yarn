@@ -113,12 +113,14 @@ draw_setup_message(Message *m, Toolbox box) {
     pango_layout_get_pixel_extents(box.lyt, &box.sextents, NULL);
     m->swidth = box.sextents.width;
 
+    // TODO, name these better you fuck.
+    // TODO, fix up these variables
     m->total_bw = opt.bw * 2;
-    m->total_swidth = opt.lmargin + m->swidth;
+    m->total_swidth = opt.lmargin + m->swidth + opt.mmargin;
     m->total_bheight = opt.height - m->total_bw;
     m->total_bwidth = (((opt.width - m->total_bw) - m->total_swidth) - opt.mmargin) - opt.rmargin;
     m->bwidth_startx = m->x + opt.bw + m->total_swidth + opt.mmargin;
-    m->bwidth_starty = m->texty + opt.overline;
+    m->bwidth_starty = m->texty + opt.bw; // + opt.overline
 }
 
 /* Redraw the "backgrounds" of all notifications -- useful when changing locations/coordinates, and things like that. */
@@ -129,8 +131,6 @@ draw_redraw(Toolbox box)
     draw_clear_surface(box.ctx);
 
     // It's possible that more messages get added while we're running this, and we don't want to set redraw to 0 before it draws.
-    //pthread_mutex_lock(&lock);
-
     int i;
     for (i = 0; i < in_queue(queuespec); i++)
     {
@@ -151,7 +151,10 @@ draw_redraw(Toolbox box)
         pango_layout_set_markup(box.lyt, MessageArray[i].summary, -1);
         pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
         cairo_set_source_rgba(box.ctx, opt.summary_color.red, opt.summary_color.green, opt.summary_color.blue, opt.summary_color.alpha);
-        cairo_move_to(box.ctx, MessageArray[i].x + opt.lmargin + opt.bw, MessageArray[i].texty + opt.overline);
+        // TODO, change opt.bw + opt.overline to something more in line with the rest.
+        // MessageArray[i].swidth_startx or something.
+        cairo_move_to(box.ctx, MessageArray[i].x + opt.lmargin + opt.bw, MessageArray[i].texty);
+        printf("texty: %d\n", MessageArray[i].texty);
         pango_cairo_show_layout(box.ctx, box.lyt);
 
         // Draw the body portion.
@@ -162,10 +165,11 @@ draw_redraw(Toolbox box)
         MessageArray[i].redraw = 0;
     }
 
-    //int width = opt.width + abs(opt.shadow_xoffset);
-    //int height = ((opt.height * opt.max_notifications) + (opt.gap * (opt.max_notifications - 1)) + abs(opt.shadow_yoffset));
+    int width = opt.width + abs(opt.shadow_xoffset);
+    int height = ((opt.height * opt.max_notifications) + (opt.gap * (opt.max_notifications - 1)) + abs(opt.shadow_yoffset));
 
-    //x_resize_window(box.sfc, width, ((opt.height * in_queue(queuespec)) + (opt.gap * (in_queue(queuespec) - 1)) + abs(opt.shadow_yoffset)));
+    x_resize_window(box.sfc, width, ((opt.height * in_queue(queuespec)) + (opt.gap * (in_queue(queuespec) - 1)) + abs(opt.shadow_yoffset)));
+    cairo_xlib_surface_get_drawable(box.sfc);
 
     //pthread_mutex_unlock(&lock);
 
@@ -190,7 +194,7 @@ draw_clear_surface(cairo_t *context)
 
 /* Draw/update everything in a loop */
 void
-draw(void)
+draw(int *state)
 {
     int i;
     running = 1;
@@ -222,17 +226,17 @@ draw(void)
             // Set the text & get its bounds.
             pango_layout_set_markup(box.lyt, MessageArray[i].body, -1);
             pango_layout_set_width(box.lyt, MessageArray[i].total_bwidth*PANGO_SCALE);
-            pango_layout_get_pixel_extents(box.lyt, &box.bextents, NULL);
+            //pango_layout_get_pixel_extents(box.lyt, &box.bextents, NULL);
 
             cairo_set_operator(box.ctx, CAIRO_OPERATOR_SOURCE);
-            // TODO, move box.bextents to message perhaps.
             cairo_rectangle(box.ctx, MessageArray[i].bwidth_startx, MessageArray[i].bwidth_starty, MessageArray[i].total_bwidth, MessageArray[i].total_bheight);
             cairo_fill_preserve(box.ctx);
             cairo_clip(box.ctx);
 
             // Push the body to the soure.
+            // TODO, bwidth_starty + opt.overline is a bit hacky, maybe incorporate it somehow into those variables.
             cairo_set_source_rgba(box.ctx, opt.body_color.red, opt.body_color.green, opt.body_color.blue, opt.body_color.alpha);
-            cairo_move_to(box.ctx, (opt.width - MessageArray[i].textx), MessageArray[i].bwidth_starty);
+            cairo_move_to(box.ctx, (opt.width - MessageArray[i].textx), MessageArray[i].bwidth_starty + opt.overline);
             pango_cairo_show_layout(box.ctx, box.lyt);
 
             // We should be able to draw out of the box next time.
@@ -268,6 +272,7 @@ draw(void)
 
         // If the queue is empty, kill this thread basically.
         if (in_queue(queuespec) == 0) {
+            *state = DEAD;
             running = 0;
         }
 

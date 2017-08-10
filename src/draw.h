@@ -26,7 +26,7 @@ void
 draw_clear_surface(cairo_t *context);
 
 void
-draw(void);
+draw(int *state);
 
 void
 destroy(cairo_surface_t *sfc);
