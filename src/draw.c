@@ -115,12 +115,15 @@ draw_setup_message(Message *m, Toolbox box) {
 
     // TODO, name these better you fuck.
     // TODO, fix up these variables
-    m->total_bw = opt.bw * 2;
-    m->total_swidth = opt.lmargin + m->swidth + opt.mmargin;
-    m->total_bheight = opt.height - m->total_bw;
-    m->total_bwidth = (((opt.width - m->total_bw) - m->total_swidth) - opt.mmargin) - opt.rmargin;
-    m->bwidth_startx = m->x + opt.bw + m->total_swidth + opt.mmargin;
-    m->bwidth_starty = m->texty + opt.bw; // + opt.overline
+    m->total_bw = opt.bw * 2;   // Total border width...
+    m->total_swidth_space = opt.lmargin + m->swidth + opt.mmargin;  // Total width dedicated to summary text.
+    m->total_sheight_space = opt.height - m->total_bw;              // Total height dedicated to summary text.
+    m->total_bwidth_space = (((opt.width - m->total_bw) - m->total_swidth_space) - opt.mmargin) - opt.rmargin;  // Total width available for body text.
+    m->total_bheight_space = opt.height - m->total_bw;              // Total height available for body text.
+    m->bwidth_startx = m->x + opt.bw + m->total_swidth_space;   // Body space start position (x).
+    m->bwidth_starty = m->texty + opt.bw;   // Body space start position (y).
+    m->swidth_startx = m->x + opt.bw + opt.lmargin; // Summary space start position (x).
+    m->swidth_starty = m->texty + opt.bw;   // Summary space start position (y);
 }
 
 /* Redraw the "backgrounds" of all notifications -- useful when changing locations/coordinates, and things like that. */
@@ -151,24 +154,21 @@ draw_redraw(Toolbox box)
         pango_layout_set_markup(box.lyt, MessageArray[i].summary, -1);
         pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
         cairo_set_source_rgba(box.ctx, opt.summary_color.red, opt.summary_color.green, opt.summary_color.blue, opt.summary_color.alpha);
-        // TODO, change opt.bw + opt.overline to something more in line with the rest.
-        // MessageArray[i].swidth_startx or something.
-        cairo_move_to(box.ctx, MessageArray[i].x + opt.lmargin + opt.bw, MessageArray[i].texty);
-        printf("texty: %d\n", MessageArray[i].texty);
+        //cairo_move_to(box.ctx, MessageArray[i].x + opt.lmargin + opt.bw, MessageArray[i].swidth_starty);
+        cairo_move_to(box.ctx, MessageArray[i].swidth_startx, MessageArray[i].swidth_starty);
         pango_cairo_show_layout(box.ctx, box.lyt);
 
         // Draw the body portion.
-        draw_panel_body_fill(box.ctx, opt.bgcolor, MessageArray[i].bwidth_startx, MessageArray[i].y + opt.bw,
-                MessageArray[i].total_bwidth, opt.height-opt.bw*2, opt.rounding);
+        draw_panel_body_fill(box.ctx, opt.bgcolor, MessageArray[i].bwidth_startx, MessageArray[i].bwidth_starty,
+                MessageArray[i].total_bwidth_space, MessageArray[i].total_bheight_space, opt.rounding);
 
         // Don't do this again until we should.
         MessageArray[i].redraw = 0;
     }
 
     int width = opt.width + abs(opt.shadow_xoffset);
-    int height = ((opt.height * opt.max_notifications) + (opt.gap * (opt.max_notifications - 1)) + abs(opt.shadow_yoffset));
-
-    x_resize_window(box.sfc, width, ((opt.height * in_queue(queuespec)) + (opt.gap * (in_queue(queuespec) - 1)) + abs(opt.shadow_yoffset)));
+    int height = (opt.height * in_queue(queuespec)) + (opt.gap * (in_queue(queuespec) - 1)) + abs(opt.shadow_yoffset);
+    x_resize_window(box.sfc, width, height);
     cairo_xlib_surface_get_drawable(box.sfc);
 
     //pthread_mutex_unlock(&lock);
@@ -217,7 +217,7 @@ draw(int *state)
         for (i = 0; i < in_queue(queuespec); i++)
         {
             // Progress the text if it has not reached the end yet.
-            MessageArray[i].textx < MessageArray[i].total_bwidth ?
+            MessageArray[i].textx < MessageArray[i].total_bwidth_space ?
                 MessageArray[i].textx += MessageArray[i].step : false;
 
             // Make sure that we dont draw out of the box after this point.
@@ -225,18 +225,18 @@ draw(int *state)
 
             // Set the text & get its bounds.
             pango_layout_set_markup(box.lyt, MessageArray[i].body, -1);
-            pango_layout_set_width(box.lyt, MessageArray[i].total_bwidth*PANGO_SCALE);
+            pango_layout_set_width(box.lyt, MessageArray[i].total_bwidth_space*PANGO_SCALE);
             //pango_layout_get_pixel_extents(box.lyt, &box.bextents, NULL);
 
             cairo_set_operator(box.ctx, CAIRO_OPERATOR_SOURCE);
-            cairo_rectangle(box.ctx, MessageArray[i].bwidth_startx, MessageArray[i].bwidth_starty, MessageArray[i].total_bwidth, MessageArray[i].total_bheight);
+            cairo_rectangle(box.ctx, MessageArray[i].bwidth_startx, MessageArray[i].bwidth_starty, MessageArray[i].total_bwidth_space, MessageArray[i].total_bheight_space);
             cairo_fill_preserve(box.ctx);
             cairo_clip(box.ctx);
 
             // Push the body to the soure.
             // TODO, bwidth_starty + opt.overline is a bit hacky, maybe incorporate it somehow into those variables.
             cairo_set_source_rgba(box.ctx, opt.body_color.red, opt.body_color.green, opt.body_color.blue, opt.body_color.alpha);
-            cairo_move_to(box.ctx, (opt.width - MessageArray[i].textx), MessageArray[i].bwidth_starty + opt.overline);
+            cairo_move_to(box.ctx, (opt.width - MessageArray[i].textx), MessageArray[i].bwidth_starty);
             pango_cairo_show_layout(box.ctx, box.lyt);
 
             // We should be able to draw out of the box next time.

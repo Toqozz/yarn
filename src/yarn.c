@@ -77,7 +77,7 @@ message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
     m.swidth = 0;
     m.bwidth = 0;
     m.textx = textx + xoffset;
-    m.texty = texty + yoffset;
+    m.texty = texty + yoffset + opt.overline;
     m.x = x + xoffset;
     m.y = y + yoffset;
     m.fuse = fuse;

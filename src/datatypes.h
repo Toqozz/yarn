@@ -85,11 +85,14 @@ typedef struct Message {
     int   redraw;
 
     int   total_bw;
-    int   total_bheight;
-    int   total_swidth;
-    int   total_bwidth;
+    int   total_bheight_space;
+    int   total_bwidth_space;
+    int   total_sheight_space;
+    int   total_swidth_space;
     int   bwidth_startx;
     int   bwidth_starty;
+    int   swidth_startx;
+    int   swidth_starty;
 
     long double fuse;
 } Message;
