@@ -166,10 +166,11 @@ draw_redraw(Toolbox box)
         MessageArray[i].redraw = 0;
     }
 
-    int width = opt.width + abs(opt.shadow_xoffset);
-    int height = (opt.height * in_queue(queuespec)) + (opt.gap * (in_queue(queuespec) - 1)) + abs(opt.shadow_yoffset);
-    x_resize_window(box.sfc, width, height);
-    cairo_xlib_surface_get_drawable(box.sfc);
+    // This causes flickering.  Why?  Is there a way around it?
+    //int width = opt.width + abs(opt.shadow_xoffset);
+    //int height = (opt.height * in_queue(queuespec)) + (opt.gap * (in_queue(queuespec) - 1)) + abs(opt.shadow_yoffset);
+    //x_resize_window(box.sfc, width, height);
+    //cairo_xlib_surface_get_drawable(box.sfc);
 
     //pthread_mutex_unlock(&lock);
 
