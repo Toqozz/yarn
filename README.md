@@ -43,7 +43,7 @@ Dependencies (with their common package names):
 
 Install steps:
 
-1. Clone the repository with `git clone https://github.com/Toqozz/yarn-c.git`.
+1. Clone the repository with `git clone https://github.com/Toqozz/yarn.git`.
 2. Step into the directory: `cd ./yarn`.
 3. Compile and install: `sudo make all install`
 
@@ -55,7 +55,7 @@ To uninstall, just run `sudo make uninstall` and these files will be removed.
 
 ## config
 
-Please copy the example [config](https://github.com/Toqozz/yarn-c/blob/master/config) to `~/.config/yarn/config`.  Currently sane defaults dont exist, so yarn won't work without this (sorry!).
+Please copy the example [config](https://github.com/Toqozz/yarn/blob/master/config) to `~/.config/yarn/config`.  Currently sane defaults dont exist, so yarn won't work without this (sorry!).
 
 The example config is heavily commented, so each option should make sense.
 
