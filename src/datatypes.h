@@ -64,6 +64,10 @@ typedef struct Config {
     double timeout;
     double rounding;
 
+    // Really a boolean.
+    int bounce;
+    int bounce_margin;
+
     int scroll_speed;
     int lmargin;
     int mmargin;
@@ -93,6 +97,8 @@ typedef struct Message {
     int   bwidth_starty;
     int   swidth_startx;
     int   swidth_starty;
+
+    int   btext_startx;
 
     long double fuse;
 } Message;
@@ -126,6 +132,9 @@ typedef struct Variables {
     double interval;
     double timeout;
     double rounding;
+
+    int bounce;
+    int bounce_margin;
 
     int   scroll_speed;
     int   lmargin;

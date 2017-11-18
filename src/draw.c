@@ -104,7 +104,10 @@ draw_setup_message(Message *m, Toolbox box) {
     m->step = (opt.interval / INTERVAL_BASELINE) * opt.scroll_speed;
 
     pango_layout_set_markup(box.lyt, m->body, -1);
-    pango_layout_set_width(box.lyt, opt.body_width*PANGO_SCALE);
+    //pango_layout_set_width(box.lyt, opt.body_width*PANGO_SCALE);
+    // Get the length of the string.
+    pango_layout_set_width(box.lyt, -1);
+
     pango_layout_get_pixel_extents(box.lyt, &box.bextents, NULL);
     m->bwidth = box.bextents.width;
 
@@ -114,16 +117,18 @@ draw_setup_message(Message *m, Toolbox box) {
     m->swidth = box.sextents.width;
 
     // TODO, name these better you fuck.
-    // TODO, fix up these variables
     m->total_bw = opt.bw * 2;   // Total border width...
     m->total_swidth_space = opt.lmargin + m->swidth + opt.mmargin;  // Total width dedicated to summary text.
     m->total_sheight_space = opt.height - m->total_bw;              // Total height dedicated to summary text.
-    m->total_bwidth_space = (((opt.width - m->total_bw) - m->total_swidth_space) - opt.mmargin) - opt.rmargin;  // Total width available for body text.
+    m->total_bwidth_space = ((opt.width - m->total_bw) - m->total_swidth_space) - opt.rmargin;  // Total width available for body text.
     m->total_bheight_space = opt.height - m->total_bw;              // Total height available for body text.
     m->bwidth_startx = m->x + opt.bw + m->total_swidth_space;   // Body space start position (x).
     m->bwidth_starty = m->texty + opt.bw;   // Body space start position (y).
     m->swidth_startx = m->x + opt.bw + opt.lmargin; // Summary space start position (x).
     m->swidth_starty = m->texty + opt.bw;   // Summary space start position (y);
+
+    // TODO, should this be different for scrolling from the other side?
+    m->btext_startx = opt.width - (opt.bw + opt.rmargin);   // Position that the text should start at.
 }
 
 /* Redraw the "backgrounds" of all notifications -- useful when changing locations/coordinates, and things like that. */
@@ -158,6 +163,11 @@ draw_redraw(Toolbox box)
         cairo_move_to(box.ctx, MessageArray[i].swidth_startx, MessageArray[i].swidth_starty);
         pango_cairo_show_layout(box.ctx, box.lyt);
 
+        //Color col;
+        //col.red = 1.0;
+        //col.green = 0.0;
+        //col.blue = 0.0;
+        //col.alpha = 0.8;
         // Draw the body portion.
         draw_panel_body_fill(box.ctx, opt.bgcolor, MessageArray[i].bwidth_startx, MessageArray[i].bwidth_starty,
                 MessageArray[i].total_bwidth_space, MessageArray[i].total_bheight_space, opt.rounding);
@@ -173,12 +183,6 @@ draw_redraw(Toolbox box)
     //cairo_xlib_surface_get_drawable(box.sfc);
 
     //pthread_mutex_unlock(&lock);
-
-    //TODO resize window? with ...
-    //gotta change opt.width and stuff so its easy.
-    // Resize the window.
-    //x_resize_window()
-    //cairo_xlib_surface_get_drawable(sfc);
 }
 
 /* Clear surface to a blank/fresh state */
@@ -203,6 +207,7 @@ draw(int *state)
     Toolbox box;
     draw_setup_toolbox(&box);
 
+    bool flipswitch;
     for (running = 1; running == 1;)
     {
         // Lock so that the message array does not get changed within an iteration of this loop.
@@ -218,15 +223,30 @@ draw(int *state)
         for (i = 0; i < in_queue(queuespec); i++)
         {
             // Progress the text if it has not reached the end yet.
-            MessageArray[i].textx < MessageArray[i].total_bwidth_space ?
-                MessageArray[i].textx += MessageArray[i].step : false;
+            if (!opt.bounce) {
+                if (MessageArray[i].textx < MessageArray[i].total_bwidth_space)
+                    MessageArray[i].textx += MessageArray[i].step;
+            } else {
+                if (MessageArray[i].textx < MessageArray[i].bwidth + opt.bounce_margin && !flipswitch)
+                    MessageArray[i].textx += MessageArray[i].step;
+                else {
+                    flipswitch = true;
+                    MessageArray[i].textx -= MessageArray[i].step;
+                    if (MessageArray[i].textx < MessageArray[i].total_bwidth_space - opt.bounce_margin) {
+                        flipswitch = false;
+                    }
+                }
+            }
 
             // Make sure that we dont draw out of the box after this point.
             cairo_save(box.ctx);
 
             // Set the text & get its bounds.
             pango_layout_set_markup(box.lyt, MessageArray[i].body, -1);
-            pango_layout_set_width(box.lyt, MessageArray[i].total_bwidth_space*PANGO_SCALE);
+            if (!opt.bounce)
+                pango_layout_set_width(box.lyt, MessageArray[i].total_bwidth_space*PANGO_SCALE);
+            else
+                pango_layout_set_width(box.lyt, -1);
             //pango_layout_get_pixel_extents(box.lyt, &box.bextents, NULL);
 
             cairo_set_operator(box.ctx, CAIRO_OPERATOR_SOURCE);
@@ -235,9 +255,10 @@ draw(int *state)
             cairo_clip(box.ctx);
 
             // Push the body to the soure.
+            // total_swidth + border width for obvious reasons.
             // TODO, bwidth_starty + opt.overline is a bit hacky, maybe incorporate it somehow into those variables.
             cairo_set_source_rgba(box.ctx, opt.body_color.red, opt.body_color.green, opt.body_color.blue, opt.body_color.alpha);
-            cairo_move_to(box.ctx, (opt.width - MessageArray[i].textx), MessageArray[i].bwidth_starty);
+            cairo_move_to(box.ctx, MessageArray[i].btext_startx - MessageArray[i].textx, MessageArray[i].bwidth_starty);
             pango_cairo_show_layout(box.ctx, box.lyt);
 
             // We should be able to draw out of the box next time.
