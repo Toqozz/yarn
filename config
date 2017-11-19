@@ -11,7 +11,7 @@ gap = 7;
 notification:
 {
     // Dimensions in the format of wxh+x+y:
-    geometry = "300x23+1927+7";
+    geometry = "300x23+1447+770";
 
     // Shadow offsets.  (use negative values if you want)
     shadow = 1;
@@ -19,6 +19,7 @@ notification:
     shadow_yoffset = 5;
 
     // Max summary length (in pixels).  Summary will be elipsed if it is longer than this.
+    // -1 for no limit, and no elipses -- recommended when using the "bounce" option.
     summary_width = 70;
     body_width = 230;
 
@@ -36,6 +37,7 @@ notification:
     //font_body = "Operator Mono Book 10";
 
     // Markup for the summary.
+    // See https://developer.gnome.org/pango/stable/PangoMarkupFormat.html for possible tags.
     summary_markup = "<b> %s </b>"
 
     // Markup for the body.
@@ -47,25 +49,31 @@ notification:
     interval = 33.0;
 
     // Default time for notifications to be shown for:
-    timeout = 10.0;
+    timeout = 15.0;
 
     // Rounding around the edges of a notification. (higehr number means more rounding).
     rounding = 3.0;
 
-    // Speed at which text scrolls across the screen. (pixels per second?)
+    // Speed at which text scrolls across the screen.  This is the amount that the text moves each tick (each tick is one interval).
     scroll_speed = 1;
+
+    // Enable bounce (notification scrolls to the end and then comes back so the whole message can be read).
+    bounce = 1;
+
+    // The amount of extra space that the notification will scroll in before bouncing back.
+    bounce_margin = 15;
 
     // Left Margin (summary distance from left side of border)
     lmargin = 2;
 
     // Mid Margin (body distance from the summary, or where the body will stop at)
-    mmargin = 4;
+    mmargin = 3;
 
     // Right margin (how far the text is cut from the right side of the border)
     rmargin = 4;
 
     // Upper margin.
-    overline = 3;
+    overline = 0;
 
     // Border thickness.
     bw = 3;
