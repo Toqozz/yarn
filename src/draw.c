@@ -223,6 +223,8 @@ draw(int *state)
         for (i = 0; i < in_queue(queuespec); i++)
         {
             // Progress the text if it has not reached the end yet.
+            // TODO: there's a much better solution to this.
+            // TODO: this only works with long messages.
             if (!opt.bounce) {
                 if (MessageArray[i].textx < MessageArray[i].total_bwidth_space)
                     MessageArray[i].textx += MessageArray[i].step;
