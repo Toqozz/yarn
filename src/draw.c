@@ -140,7 +140,6 @@ draw_setup_message(Message *m, Toolbox box) {
 void
 draw_redraw(Toolbox box)
 {
-    printf("redrawing...\n");
     // If we need to redraw, clear the surface and redraw notifications.
     draw_clear_surface(box.ctx);
 
