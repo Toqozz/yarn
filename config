@@ -67,7 +67,7 @@ notification:
     lmargin = 2;
 
     // Mid Margin (body distance from the summary, or where the body will stop at)
-    mmargin = 3;
+    mmargin = 6;
 
     // Right margin (how far the text is cut from the right side of the border)
     rmargin = 4;

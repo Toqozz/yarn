@@ -72,6 +72,8 @@ message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
     body = parse_quote_markup(parse_strip_markup(body));
     //body = parse_quote_markup(body);
 
+    // Initialization, etc.
+    m.step = (opt.interval / INTERVAL_BASELINE) * opt.scroll_speed;
     m.summary = strdup(summary);
     m.body = strdup(body);
     m.swidth = 0;
@@ -81,6 +83,8 @@ message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
     m.x = x + xoffset;
     m.y = y + yoffset;
     m.fuse = fuse;
+    m.bounce = 0;
+    m.flipswitch = 0;
 
     m.redraw = 1;
 

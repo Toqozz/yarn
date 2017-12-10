@@ -23,8 +23,6 @@
 #include "parse.h"
 #include "queue.h"
 
-// Interval = 33 = 30fps.
-#define INTERVAL_BASELINE 33
 
 extern Variables opt;
 extern pthread_mutex_t lock;
@@ -59,13 +57,13 @@ sighup_handler(int signum) {
 void
 draw_check_fuses(void) {
     for (int i = 0; i < in_queue(queuespec); i++) {
-        //printf("Fuse: %Lf, Taking away: %f\n", MessageArray[i].fuse, (double) INTERVAL/1000);
+        //printf("Fuse: %Lf, Taking away: %f\n", MessageArray[i].fuse, opt.interval/1000.0);
         MessageArray[i].fuse = MessageArray[i].fuse - opt.interval/1000.0;
-        if (MessageArray[i].fuse <= 0)
+        if (MessageArray[i].fuse <= 0.0) {
             queue_delete(&queuespec, i);
+            queue_align(queuespec);
         }
-
-    queue_align(queuespec);
+    }
 }
 
 void
@@ -101,13 +99,15 @@ draw_setup_toolbox(Toolbox *t)
 void
 draw_setup_message(Message *m, Toolbox box) {
     // TODO; different settings for different types of messages?
-    m->step = (opt.interval / INTERVAL_BASELINE) * opt.scroll_speed;
-
     pango_layout_set_markup(box.lyt, m->body, -1);
-    //pango_layout_set_width(box.lyt, opt.body_width*PANGO_SCALE);
-    // Get the length of the string.
-    pango_layout_set_width(box.lyt, -1);
+    if (opt.bounce) {
+        // If bounce is set, we never want to limit the width.
+        pango_layout_set_width(box.lyt, -1);
+    } else {
+        pango_layout_set_width(box.lyt, opt.body_width*PANGO_SCALE);
+    }
 
+    // Get the length of the string.
     pango_layout_get_pixel_extents(box.lyt, &box.bextents, NULL);
     m->bwidth = box.bextents.width;
 
@@ -129,12 +129,18 @@ draw_setup_message(Message *m, Toolbox box) {
 
     // TODO, should this be different for scrolling from the other side?
     m->btext_startx = opt.width - (opt.bw + opt.rmargin);   // Position that the text should start at.
+
+    // TODO: can this be condensed?
+    if (m->total_bwidth_space < m->bwidth && opt.bounce) {
+        m->bounce = 1;
+    }
 }
 
 /* Redraw the "backgrounds" of all notifications -- useful when changing locations/coordinates, and things like that. */
 void
 draw_redraw(Toolbox box)
 {
+    printf("redrawing...\n");
     // If we need to redraw, clear the surface and redraw notifications.
     draw_clear_surface(box.ctx);
 
@@ -207,7 +213,6 @@ draw(int *state)
     Toolbox box;
     draw_setup_toolbox(&box);
 
-    bool flipswitch;
     for (running = 1; running == 1;)
     {
         // Lock so that the message array does not get changed within an iteration of this loop.
@@ -223,22 +228,18 @@ draw(int *state)
         for (i = 0; i < in_queue(queuespec); i++)
         {
             // Progress the text if it has not reached the end yet.
-            // TODO: there's a much better solution to this.
-            // TODO: this only works with long messages.
-            if (!opt.bounce) {
-                if (MessageArray[i].textx < MessageArray[i].total_bwidth_space)
-                    MessageArray[i].textx += MessageArray[i].step;
-            } else {
-                if (MessageArray[i].textx < MessageArray[i].bwidth + opt.bounce_margin && !flipswitch)
-                    MessageArray[i].textx += MessageArray[i].step;
-                else {
-                    flipswitch = true;
-                    MessageArray[i].textx -= MessageArray[i].step;
-                    if (MessageArray[i].textx < MessageArray[i].total_bwidth_space - opt.bounce_margin) {
-                        flipswitch = false;
-                    }
-                }
+            // This stuff could be put in a function, but it would probably just obscure it more.
+            // TODO: improve this.
+            if (MessageArray[i].textx >= MessageArray[i].bwidth + opt.bounce_margin && MessageArray[i].bounce) {
+                MessageArray[i].step = MessageArray[i].step * -1;
+                MessageArray[i].flipswitch = 1;
+            } else if (MessageArray[i].textx < MessageArray[i].total_bwidth_space - opt.bounce_margin && MessageArray[i].flipswitch) {
+                MessageArray[i].step *= -1;
+            } else if (MessageArray[i].textx >= MessageArray[i].total_bwidth_space && !MessageArray[i].bounce) {
+                MessageArray[i].step *= 0;
             }
+
+            MessageArray[i].textx += MessageArray[i].step;
 
             // Make sure that we dont draw out of the box after this point.
             cairo_save(box.ctx);

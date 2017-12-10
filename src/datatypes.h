@@ -5,6 +5,11 @@
 #include <pango/pangocairo.h>
 #include <time.h>
 
+// It's easiest to have these here.
+#define NANO_SECOND_MULTIPLIER 1000000
+// Interval = 33 = 30fps.
+#define INTERVAL_BASELINE 33
+
 typedef enum { DEAD, ALIVE } ThreadState;
 
 typedef struct Toolbox {
@@ -87,6 +92,9 @@ typedef struct Message {
     int   y;
     int   step;
     int   redraw;
+    int   bounce;
+    // For bouncing.
+    int   flipswitch;
 
     int   total_bw;
     int   total_bheight_space;

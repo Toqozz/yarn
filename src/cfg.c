@@ -7,8 +7,6 @@
 #include "datatypes.h"
 #include "parse.h"
 
-#define NANO_SECOND_MULTIPLIER 1000000
-
 extern Variables opt;
 
 Config
