@@ -66,4 +66,4 @@ The example config is heavily commented, so each option should make sense.
 - Optimize draw loop when scrolling is turned off.
 - Scroll from a different side.
 - Images from `notify-send` (album art, application icon, etc).
-- Bounce back and scroll through the whole message.
+- ~~Bounce back and scroll through the whole message.~~
