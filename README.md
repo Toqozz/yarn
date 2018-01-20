@@ -50,6 +50,8 @@ Install steps:
 Service files will be installed to `/usr/local/share/dbus-1/services/org.toqoz.yarn.service` and `/usr/local/lib/systemd/user/yarn.service`.  
 yarn itself will be installed to `/usr/local/bin/yarn`.
 
+From here, you can then use `systemctl --user enable yarn` and `systemctl --user start yarn` to enable / start yarn.
+
 
 To uninstall, just run `sudo make uninstall` and these files will be removed.
 
