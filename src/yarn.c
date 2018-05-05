@@ -70,12 +70,12 @@ message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
 
     // Strip / parse markup and add pango markup.
     summary = parse_quote_markup(parse_strip_markup(summary));
-    // The resulting string will be the size of the formatting + the size of the normal string - the length of the tag.
-    char *newsum = malloc(sizeof(char) * (strlen(summary) + strlen(opt.summary_markup)) - tag_length);
+    // The resulting string will be: (size of the formatting + size of string + null terminator ) - tag length.
+    char *newsum = malloc(sizeof(char) * (strlen(summary) + strlen(opt.summary_markup) + 1) - tag_length);
     sprintf(newsum, opt.summary_markup, summary);
 
     body = parse_quote_markup(parse_strip_markup(body));
-    char *newbody = malloc(sizeof(char) * (strlen(body) + strlen(opt.body_markup)) - tag_length);
+    char *newbody = malloc(sizeof(char) * (strlen(body) + strlen(opt.body_markup) + 1) - tag_length);
     sprintf(newbody, opt.body_markup, body);
 
     // Initialization, etc.
