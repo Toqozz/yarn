@@ -38,10 +38,10 @@ notification:
 
     // Markup for the summary.
     // See https://developer.gnome.org/pango/stable/PangoMarkupFormat.html for possible tags.
-    summary_markup = "<b> %s </b>"
+    summary_markup = "<span background='blue'>%s</span>"
 
     // Markup for the body.
-    body_markup = "<i> %s </i>"
+    body_markup = "%s"
 
     // Interval between refreshes (in ms).  Lower values mean smoother animation but more work.
     // 16.5 = 60fps
@@ -58,7 +58,7 @@ notification:
     scroll_speed = 1;
 
     // Enable bounce (notification scrolls to the end and then comes back so the whole message can be read).
-    bounce = 0;
+    bounce = 1;
 
     // The amount of extra space that the notification will scroll in before bouncing back.
     bounce_margin = 15;
