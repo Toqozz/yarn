@@ -66,7 +66,7 @@ cfg_read(config_t cfg, char *file, Config *c)
 
         config_setting_lookup_string(setting, "font", &c->font);
         config_setting_lookup_string(setting, "summary_markup", &c->summary_markup);
-        config_setting_lookup_string(setting, "summary_markup", &c->summary_markup);
+        config_setting_lookup_string(setting, "body_markup", &c->body_markup);
 
         config_setting_lookup_float(setting, "interval", &c->interval);
         config_setting_lookup_float(setting, "rounding", &c->rounding);
@@ -143,6 +143,8 @@ cfg_assign(Config *c)
     opt.bdcolor = parse_hex_to_rgba(c->bdcolor);
 
     opt.font = c->font;
+    opt.summary_markup = c->summary_markup;
+    opt.body_markup = c->body_markup;
 
     opt.tspec.tv_sec = 0;
     opt.tspec.tv_nsec = c->interval * NANO_SECOND_MULTIPLIER;

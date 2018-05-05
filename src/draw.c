@@ -112,11 +112,11 @@ draw_setup_message(Message *m, Toolbox box) {
     m->bwidth = box.bextents.width;
 
     pango_layout_set_markup(box.lyt, m->summary, -1);
+    printf("%s\n", m->summary);
     pango_layout_set_width(box.lyt, opt.summary_width*PANGO_SCALE);
     pango_layout_get_pixel_extents(box.lyt, &box.sextents, NULL);
     m->swidth = box.sextents.width;
 
-    // TODO, name these better you fuck.
     m->total_bw = opt.bw * 2;   // Total border width...
     m->total_swidth_space = opt.lmargin + m->swidth + opt.mmargin;  // Total width dedicated to summary text.
     m->total_sheight_space = opt.height - m->total_bw;              // Total height dedicated to summary text.
@@ -130,7 +130,7 @@ draw_setup_message(Message *m, Toolbox box) {
     // TODO, should this be different for scrolling from the other side?
     m->btext_startx = opt.width - (opt.bw + opt.rmargin);   // Position that the text should start at.
 
-    // TODO: can this be condensed?
+    // If the message is longer than the space we have, and bounce is enabled, we should bounce.
     if (m->total_bwidth_space < m->bwidth && opt.bounce) {
         m->bounce = 1;
     }

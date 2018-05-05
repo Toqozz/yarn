@@ -65,17 +65,23 @@ message_create(Notification *n, int textx, int texty, int x, int y, double fuse)
     char *summary = n->summary,
          *body = n->body;
 
-    // Boop boop.
+    // Length of '%s' -- always the same.
+    const int tag_length = 2;
+
+    // Strip / parse markup and add pango markup.
     summary = parse_quote_markup(parse_strip_markup(summary));
-    //summary = parse_quote_markup(summary);
+    // The resulting string will be the size of the formatting + the size of the normal string - the length of the tag.
+    char *newsum = malloc(sizeof(char) * (strlen(summary) + strlen(opt.summary_markup)) - tag_length);
+    sprintf(newsum, opt.summary_markup, summary);
 
     body = parse_quote_markup(parse_strip_markup(body));
-    //body = parse_quote_markup(body);
+    char *newbody = malloc(sizeof(char) * (strlen(body) + strlen(opt.body_markup)) - tag_length);
+    sprintf(newbody, opt.body_markup, body);
 
     // Initialization, etc.
     m.step = (opt.interval / INTERVAL_BASELINE) * opt.scroll_speed;
-    m.summary = strdup(summary);
-    m.body = strdup(body);
+    m.summary = newsum;
+    m.body = newbody;
     m.swidth = 0;
     m.bwidth = 0;
     m.textx = textx + xoffset;

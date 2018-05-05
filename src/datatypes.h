@@ -134,6 +134,8 @@ typedef struct Variables {
     Color bdcolor;
 
     const char *font;
+    const char *summary_markup;
+    const char *body_markup;
 
     struct timespec tspec;
 
