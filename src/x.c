@@ -43,6 +43,11 @@ x_set_wm(Window win, Display *dsp)
     property[0] = XInternAtom(dsp, "_NET_WM_STATE_ABOVE", false);
     // Reach for 1 long, (1L).
     XChangeProperty(dsp, win, property[2], XA_ATOM, 32, PropModeReplace, (unsigned char *) property, 1L);
+
+    // Set MOTIF_WM_HINTS to undecorate
+    long hints[5] = { 2, 0, 0, 0, 0};
+    Atom motif_hints = XInternAtom(dsp, "_MOTIF_WM_HINTS", False);
+    XChangeProperty(dsp, win, motif_hints, motif_hints, 32, PropModeReplace, (unsigned char *)hints, 5);
 }
 
 // Map window and return surface for that window.
